@@ -1,6 +1,10 @@
 package builds
 
-import "time"
+import (
+	"net/http"
+	"sync"
+	"time"
+)
 
 type Build struct {
 	Guid        string            `json:"guid"`
@@ -9,4 +13,7 @@ type Build struct {
 	Script      string            `json:"script"`
 	Environment map[string]string `json:"environment"`
 	Status      string            `json:"status"`
+
+	bits        chan *http.Request `json:"-"`
+	servingBits sync.WaitGroup
 }

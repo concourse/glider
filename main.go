@@ -15,6 +15,12 @@ var listenAddr = flag.String(
 	"listening address",
 )
 
+var peerAddr = flag.String(
+	"peerAddr",
+	"",
+	"address reachable by other nodes",
+)
+
 var proleURL = flag.String(
 	"proleAddr",
 	"http://127.0.0.1:4637",
@@ -24,9 +30,13 @@ var proleURL = flag.String(
 func main() {
 	flag.Parse()
 
+	if *peerAddr == "" {
+		log.Fatalln("must specify -peerAddr")
+	}
+
 	logger := log.New(os.Stdout, "", 0)
 
-	handler := api.New(logger, *proleURL)
+	handler := api.New(logger, *peerAddr, *proleURL)
 
 	server := tigertonic.NewServer(*listenAddr, handler)
 

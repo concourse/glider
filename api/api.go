@@ -8,13 +8,16 @@ import (
 	"github.com/winston-ci/redgreen/api/builds"
 )
 
-func New(logger *log.Logger, proleURL string) http.Handler {
+func New(logger *log.Logger, peerAddr, proleURL string) http.Handler {
 	mux := tigertonic.NewTrieServeMux()
 
-	builds := builds.NewHandler(proleURL)
+	builds := builds.NewHandler(peerAddr, proleURL)
 
 	mux.Handle("POST", "/builds", logged(logger, builds.PostHandler()))
 	mux.Handle("GET", "/builds", logged(logger, builds.GetHandler()))
+
+	mux.Handle("POST", "/builds/{guid}/bits", logged(logger, builds.PostBitsHandler()))
+	mux.Handle("GET", "/builds/{guid}/bits", logged(logger, builds.GetBitsHandler()))
 
 	return mux
 }

@@ -3,11 +3,14 @@ package api_test
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"time"
 
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
@@ -25,7 +28,7 @@ var _ = Describe("API", func() {
 	BeforeEach(func() {
 		proleServer = ghttp.NewServer()
 
-		handler := api.New(log.New(GinkgoWriter, "test", 0), proleServer.URL())
+		handler := api.New(log.New(GinkgoWriter, "test", 0), "peer-addr", proleServer.URL())
 
 		server = httptest.NewServer(handler)
 		client = &http.Client{
@@ -161,6 +164,204 @@ var _ = Describe("API", func() {
 				Ω(receivedBuilds[0].Guid).Should(Equal(expectedBuilds[2].Guid))
 				Ω(receivedBuilds[1].Guid).Should(Equal(expectedBuilds[1].Guid))
 				Ω(receivedBuilds[2].Guid).Should(Equal(expectedBuilds[0].Guid))
+			})
+		})
+	})
+
+	Describe("POST /builds/:guid/bits", func() {
+		var build builds.Build
+
+		var response *http.Response
+
+		BeforeEach(func() {
+			build = builds.Build{
+				Guid: "some-guid",
+			}
+		})
+
+		JustBeforeEach(func() {
+			var err error
+
+			// set up a consumer
+			go client.Get(server.URL + "/builds/" + build.Guid + "/bits")
+
+			response, err = client.Post(
+				server.URL+"/builds/"+build.Guid+"/bits",
+				"application/octet-stream",
+				bytes.NewBufferString("streamed body"),
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		Context("with a valid build guid", func() {
+			BeforeEach(func() {
+				build = builds.Build{
+					Image:  "ubuntu",
+					Script: "ls -al /",
+					Environment: map[string]string{
+						"FOO": "bar",
+					},
+				}
+
+				response, err := client.Post(
+					server.URL+"/builds",
+					"application/json",
+					bytes.NewBufferString(buildPayload(&build)),
+				)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				err = json.NewDecoder(response.Body).Decode(&build)
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			BeforeEach(func() {
+				proleServer.AppendHandlers(
+					ghttp.CombineHandlers(
+						ghttp.VerifyRequest("POST", "/builds"),
+						ghttp.VerifyJSONRepresenting(builds.ProleBuild{
+							Guid: build.Guid,
+
+							LogConfig: models.LogConfig{
+								Guid:       build.Guid,
+								SourceName: "BLD",
+							},
+
+							Image:  "ubuntu",
+							Script: "ls -al /",
+
+							Source: builds.ProleBuildSource{
+								Type: "raw",
+								URI:  "http://peer-addr/builds/" + build.Guid + "/bits",
+							},
+
+							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
+
+							Parameters: map[string]string{
+								"FOO": "bar",
+							},
+						}),
+						ghttp.RespondWith(201, ""),
+					),
+				)
+			})
+
+			It("triggers a build and returns 201", func() {
+				Ω(response.StatusCode).Should(Equal(http.StatusCreated))
+			})
+
+			Context("when prole fails", func() {
+				BeforeEach(func() {
+					proleServer.SetHandler(0, ghttp.RespondWith(500, ""))
+				})
+
+				It("returns 500", func() {
+					Ω(response.StatusCode).Should(Equal(http.StatusServiceUnavailable))
+				})
+			})
+		})
+
+		Context("with an invalid build guid", func() {
+			It("returns 404", func() {
+				Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
+			})
+		})
+	})
+
+	Describe("GET /builds/:guid/bits", func() {
+		var build builds.Build
+
+		var response *http.Response
+
+		BeforeEach(func() {
+			build = builds.Build{
+				Guid: "some-guid",
+			}
+		})
+
+		streamBits := func() {
+			var err error
+
+			response, err = client.Get(server.URL + "/builds/" + build.Guid + "/bits")
+			Ω(err).ShouldNot(HaveOccurred())
+		}
+
+		JustBeforeEach(streamBits)
+
+		Context("with a valid build guid", func() {
+			BeforeEach(func() {
+				build = builds.Build{
+					Image:  "ubuntu",
+					Script: "ls -al /",
+					Environment: map[string]string{
+						"FOO": "bar",
+					},
+				}
+
+				response, err := client.Post(
+					server.URL+"/builds",
+					"application/json",
+					bytes.NewBufferString(buildPayload(&build)),
+				)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				err = json.NewDecoder(response.Body).Decode(&build)
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			Context("with bits", func() {
+				BeforeEach(func() {
+					gotBits := &sync.WaitGroup{}
+					gotBits.Add(1)
+
+					proleServer.AppendHandlers(
+						func(w http.ResponseWriter, req *http.Request) {
+							gotBits.Done()
+							w.WriteHeader(201)
+						},
+					)
+
+					go func() {
+						defer GinkgoRecover()
+
+						_, err := client.Post(
+							server.URL+"/builds/"+build.Guid+"/bits",
+							"application/octet-stream",
+							bytes.NewBufferString("streamed body"),
+						)
+						Ω(err).ShouldNot(HaveOccurred())
+					}()
+
+					gotBits.Wait()
+				})
+
+				It("returns 200", func() {
+					Ω(response.StatusCode).Should(Equal(http.StatusOK))
+				})
+
+				It("streams the bits that are being uploaded", func() {
+					body, err := ioutil.ReadAll(response.Body)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(string(body)).Should(Equal("streamed body"))
+				})
+			})
+
+			Context("with no bits within 1 second", func() {
+				var startedAt time.Time
+
+				BeforeEach(func() {
+					startedAt = time.Now()
+				})
+
+				It("returns 404", func() {
+					Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
+					Ω(time.Since(startedAt)).Should(BeNumerically(">=", time.Second))
+				})
+			})
+		})
+
+		Context("with an invalid build guid", func() {
+			It("returns 404", func() {
+				Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
 			})
 		})
 	})
