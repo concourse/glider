@@ -16,8 +16,8 @@ func New(logger *log.Logger, peerAddr, proleURL string) http.Handler {
 	mux.Handle("POST", "/builds", logged(logger, builds.PostHandler()))
 	mux.Handle("GET", "/builds", logged(logger, builds.GetHandler()))
 
-	mux.Handle("POST", "/builds/{guid}/bits", logged(logger, builds.PostBitsHandler()))
-	mux.Handle("GET", "/builds/{guid}/bits", logged(logger, builds.GetBitsHandler()))
+	mux.Handle("POST", "/builds/{guid}/bits", builds.PostBitsHandler())
+	mux.Handle("GET", "/builds/{guid}/bits", builds.GetBitsHandler())
 
 	mux.Handle("PUT", "/builds/{guid}/result", logged(logger, builds.PutResultHandler()))
 	mux.Handle("GET", "/builds/{guid}/result", logged(logger, builds.GetResultHandler()))
