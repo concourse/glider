@@ -144,7 +144,7 @@ func (handler *Handler) postBits(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 
-	build.servingBits.Add(1)
+	defer req.Body.Close()
 
 	res, err := http.Post(handler.proleURL+"/builds", "application/json", buf)
 	if err != nil {
@@ -152,6 +152,8 @@ func (handler *Handler) postBits(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	} else if res.StatusCode == http.StatusCreated {
+		build.servingBits.Add(1)
+
 		w.WriteHeader(http.StatusCreated)
 
 		build.bits <- req
@@ -187,11 +189,9 @@ func (handler *Handler) getBits(w http.ResponseWriter, req *http.Request) {
 
 	log.Println("serving bits for", build.Guid)
 
-	defer bits.Body.Close()
 	defer build.servingBits.Done()
 
 	w.Header().Set("Content-Type", bits.Header.Get("Content-Type"))
-	w.Header().Set("Content-Length", bits.Header.Get("Content-Length"))
 
 	w.WriteHeader(200)
 
