@@ -22,7 +22,7 @@ var peerAddr = flag.String(
 )
 
 var proleURL = flag.String(
-	"proleAddr",
+	"proleURL",
 	"http://127.0.0.1:4637",
 	"address denoting the prole service",
 )
