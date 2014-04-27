@@ -24,4 +24,5 @@ type ProleBuildSource struct {
 	Type string `json:"type"`
 	URI  string `json:"uri"`
 	Ref  string `json:"ref"`
+	Path string `json:"path"`
 }

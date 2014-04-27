@@ -65,6 +65,7 @@ var _ = Describe("API", func() {
 		BeforeEach(func() {
 			build = &builds.Build{
 				Image:  "ubuntu",
+				Path:   "some/path",
 				Script: "ls -al /",
 			}
 
@@ -199,6 +200,7 @@ var _ = Describe("API", func() {
 			BeforeEach(func() {
 				build = createBuild(builds.Build{
 					Image:  "ubuntu",
+					Path:   "some/path",
 					Script: "ls -al /",
 					Environment: map[string]string{
 						"FOO": "bar",
@@ -224,6 +226,7 @@ var _ = Describe("API", func() {
 							Source: builds.ProleBuildSource{
 								Type: "raw",
 								URI:  "http://peer-addr/builds/" + build.Guid + "/bits",
+								Path: "some/path",
 							},
 
 							Callback: "http://peer-addr/builds/" + build.Guid + "/result",

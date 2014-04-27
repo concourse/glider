@@ -132,6 +132,7 @@ func (handler *Handler) postBits(w http.ResponseWriter, req *http.Request) {
 		Source: ProleBuildSource{
 			Type: "raw",
 			URI:  "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
+			Path: build.Path,
 		},
 
 		Callback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
