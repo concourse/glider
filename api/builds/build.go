@@ -17,3 +17,7 @@ type Build struct {
 	bits        chan *http.Request `json:"-"`
 	servingBits sync.WaitGroup
 }
+
+type BuildResult struct {
+	Status string `json:"status"`
+}

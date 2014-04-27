@@ -43,6 +43,20 @@ var _ = Describe("API", func() {
 		return string(payload)
 	}
 
+	createBuild := func(build builds.Build) builds.Build {
+		response, err := client.Post(
+			server.URL+"/builds",
+			"application/json",
+			bytes.NewBufferString(buildPayload(&build)),
+		)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		err = json.NewDecoder(response.Body).Decode(&build)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		return build
+	}
+
 	Describe("POST /builds", func() {
 		var build *builds.Build
 		var requestBody string
@@ -133,25 +147,13 @@ var _ = Describe("API", func() {
 		})
 
 		Context("with multiple builds", func() {
-			var expectedBuilds [3]builds.Build
+			var expectedBuilds []builds.Build
 
 			BeforeEach(func() {
-				expectedBuilds = [3]builds.Build{}
-
-				for i := 0; i < 3; i++ {
-					build := builds.Build{Image: "ubuntu"}
-
-					response, err := client.Post(
-						server.URL+"/builds",
-						"application/json",
-						bytes.NewBufferString(buildPayload(&build)),
-					)
-					Ω(err).ShouldNot(HaveOccurred())
-
-					err = json.NewDecoder(response.Body).Decode(&build)
-					Ω(err).ShouldNot(HaveOccurred())
-
-					expectedBuilds[i] = build
+				expectedBuilds = []builds.Build{
+					createBuild(builds.Build{Image: "image1"}),
+					createBuild(builds.Build{Image: "image2"}),
+					createBuild(builds.Build{Image: "image3"}),
 				}
 			})
 
@@ -195,23 +197,13 @@ var _ = Describe("API", func() {
 
 		Context("with a valid build guid", func() {
 			BeforeEach(func() {
-				build = builds.Build{
+				build = createBuild(builds.Build{
 					Image:  "ubuntu",
 					Script: "ls -al /",
 					Environment: map[string]string{
 						"FOO": "bar",
 					},
-				}
-
-				response, err := client.Post(
-					server.URL+"/builds",
-					"application/json",
-					bytes.NewBufferString(buildPayload(&build)),
-				)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				err = json.NewDecoder(response.Body).Decode(&build)
-				Ω(err).ShouldNot(HaveOccurred())
+				})
 			})
 
 			BeforeEach(func() {
@@ -289,23 +281,7 @@ var _ = Describe("API", func() {
 
 		Context("with a valid build guid", func() {
 			BeforeEach(func() {
-				build = builds.Build{
-					Image:  "ubuntu",
-					Script: "ls -al /",
-					Environment: map[string]string{
-						"FOO": "bar",
-					},
-				}
-
-				response, err := client.Post(
-					server.URL+"/builds",
-					"application/json",
-					bytes.NewBufferString(buildPayload(&build)),
-				)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				err = json.NewDecoder(response.Body).Decode(&build)
-				Ω(err).ShouldNot(HaveOccurred())
+				build = createBuild(builds.Build{Image: "ubuntu"})
 			})
 
 			Context("with bits", func() {
@@ -356,6 +332,70 @@ var _ = Describe("API", func() {
 					Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
 					Ω(time.Since(startedAt)).Should(BeNumerically(">=", time.Second))
 				})
+			})
+		})
+
+		Context("with an invalid build guid", func() {
+			It("returns 404", func() {
+				Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
+			})
+		})
+	})
+
+	Describe("GET/PUT /builds/:guid/result", func() {
+		var build builds.Build
+		var endpoint string
+
+		var response *http.Response
+
+		BeforeEach(func() {
+			build = builds.Build{
+				Guid: "some-guid",
+			}
+		})
+
+		JustBeforeEach(func() {
+			var err error
+
+			endpoint = server.URL + "/builds/" + build.Guid + "/result"
+
+			req, err := http.NewRequest("PUT", endpoint, nil)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			reqPayload := bytes.NewBufferString(`{"status":"succeeded"}`)
+			req.Header.Set("Content-Type", "application/json")
+			req.Body = ioutil.NopCloser(reqPayload)
+
+			response, err = client.Do(req)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		Context("with a valid build guid", func() {
+			BeforeEach(func() {
+				build = createBuild(
+					builds.Build{
+						Image:  "ubuntu",
+						Script: "ls -al /",
+						Environment: map[string]string{
+							"FOO": "bar",
+						},
+					},
+				)
+			})
+
+			It("returns 200", func() {
+				Ω(response.StatusCode).Should(Equal(http.StatusOK))
+			})
+
+			It("updates the build's status", func() {
+				response, err := client.Get(endpoint)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				var result builds.BuildResult
+				err = json.NewDecoder(response.Body).Decode(&result)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(result.Status).Should(Equal("succeeded"))
 			})
 		})
 

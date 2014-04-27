@@ -52,6 +52,14 @@ func (handler *Handler) GetBitsHandler() http.Handler {
 	return http.HandlerFunc(handler.getBits)
 }
 
+func (handler *Handler) PutResultHandler() http.Handler {
+	return tigertonic.Marshaled(handler.putResult)
+}
+
+func (handler *Handler) GetResultHandler() http.Handler {
+	return tigertonic.Marshaled(handler.getResult)
+}
+
 func (handler *Handler) post(url *url.URL, header http.Header, build *Build) (int, http.Header, *Build, error) {
 	err := handler.validateBuild(build)
 	if err != nil {
@@ -191,6 +199,40 @@ func (handler *Handler) getBits(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Println("streaming bits failed:", err)
 	}
+}
+
+func (handler *Handler) putResult(url *url.URL, header http.Header, result *BuildResult) (int, http.Header, *BuildResult, error) {
+	guid := url.Query().Get("guid")
+
+	handler.buildsMutex.RLock()
+	build, found := handler.builds[guid]
+	handler.buildsMutex.RUnlock()
+
+	if !found {
+		return http.StatusNotFound, nil, nil, nil
+	}
+
+	log.Println("updating result", build.Guid, result)
+
+	handler.buildsMutex.Lock()
+	build.Status = result.Status
+	handler.buildsMutex.Unlock()
+
+	return http.StatusOK, nil, result, nil
+}
+
+func (handler *Handler) getResult(url *url.URL, header http.Header) (int, http.Header, *BuildResult, error) {
+	guid := url.Query().Get("guid")
+
+	handler.buildsMutex.RLock()
+	build, found := handler.builds[guid]
+	handler.buildsMutex.RUnlock()
+
+	if !found {
+		return http.StatusNotFound, nil, nil, nil
+	}
+
+	return http.StatusOK, nil, &BuildResult{build.Status}, nil
 }
 
 func (handler *Handler) validateBuild(build *Build) error {
