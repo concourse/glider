@@ -38,6 +38,7 @@ func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
+			log.Println("error reading message:", err)
 			break
 		}
 
