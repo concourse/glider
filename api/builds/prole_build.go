@@ -3,7 +3,7 @@ package builds
 type ProleBuild struct {
 	Guid string `json:"guid"`
 
-	LogsURL string `json:"log"`
+	LogsURL string `json:"logs_url"`
 
 	Image  string `json:"image"`
 	Script string `json:"script"`
