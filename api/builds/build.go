@@ -17,7 +17,7 @@ type Build struct {
 	Environment map[string]string `json:"environment"`
 	Status      string            `json:"status"`
 
-	bits        chan *http.Request `json:"-"`
+	bits        chan *http.Request
 	servingBits *sync.WaitGroup
 
 	logBuffer *logbuffer.LogBuffer
