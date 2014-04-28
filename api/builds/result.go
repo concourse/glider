@@ -31,6 +31,7 @@ func (handler *Handler) PutResult(w http.ResponseWriter, r *http.Request) {
 
 	handler.buildsMutex.Lock()
 	build.Status = result.Status
+	build.logBuffer.Close()
 	handler.buildsMutex.Unlock()
 
 	w.WriteHeader(http.StatusOK)

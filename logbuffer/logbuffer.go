@@ -11,6 +11,8 @@ type LogBuffer struct {
 	contentMutex *sync.RWMutex
 
 	sinks []*websocket.Conn
+
+	closed bool
 }
 
 func NewLogBuffer() *LogBuffer {
@@ -44,9 +46,24 @@ func (buffer *LogBuffer) Write(data []byte) (int, error) {
 func (buffer *LogBuffer) Attach(conn *websocket.Conn) {
 	buffer.contentMutex.Lock()
 
-	buffer.sinks = append(buffer.sinks, conn)
-
 	conn.WriteMessage(websocket.BinaryMessage, buffer.content)
+
+	if !buffer.closed {
+		buffer.sinks = append(buffer.sinks, conn)
+	}
+
+	buffer.contentMutex.Unlock()
+}
+
+func (buffer *LogBuffer) Close() {
+	buffer.contentMutex.Lock()
+
+	for _, sink := range buffer.sinks {
+		sink.Close()
+	}
+
+	buffer.closed = true
+	buffer.sinks = nil
 
 	buffer.contentMutex.Unlock()
 }
