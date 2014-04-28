@@ -59,7 +59,11 @@ func (handler *Handler) PostBits(w http.ResponseWriter, r *http.Request) {
 		log.Println("error triggering build:", err)
 		panic(err)
 		w.WriteHeader(http.StatusInternalServerError)
-	} else if res.StatusCode == http.StatusCreated {
+	}
+
+	res.Body.Close()
+
+	if res.StatusCode == http.StatusCreated {
 		build.servingBits.Add(1)
 
 		w.WriteHeader(http.StatusCreated)
