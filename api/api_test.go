@@ -3,6 +3,7 @@ package api_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,9 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cloudfoundry-incubator/runtime-schema/models"
+	"github.com/gorilla/websocket"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
 
 	"github.com/winston-ci/redgreen/api"
@@ -50,6 +52,8 @@ var _ = Describe("API", func() {
 			bytes.NewBufferString(buildPayload(&build)),
 		)
 		Ω(err).ShouldNot(HaveOccurred())
+
+		Ω(response.StatusCode).Should(Equal(http.StatusCreated))
 
 		err = json.NewDecoder(response.Body).Decode(&build)
 		Ω(err).ShouldNot(HaveOccurred())
@@ -215,10 +219,7 @@ var _ = Describe("API", func() {
 						ghttp.VerifyJSONRepresenting(builds.ProleBuild{
 							Guid: build.Guid,
 
-							LogConfig: models.LogConfig{
-								Guid:       build.Guid,
-								SourceName: "BLD",
-							},
+							LogsURL: "ws://peer-addr/builds/" + build.Guid + "/log/input",
 
 							Image:  "ubuntu",
 							Script: "ls -al /",
@@ -394,6 +395,8 @@ var _ = Describe("API", func() {
 				response, err := client.Get(endpoint)
 				Ω(err).ShouldNot(HaveOccurred())
 
+				Ω(response.StatusCode).Should(Equal(http.StatusOK))
+
 				var result builds.BuildResult
 				err = json.NewDecoder(response.Body).Decode(&result)
 				Ω(err).ShouldNot(HaveOccurred())
@@ -404,6 +407,123 @@ var _ = Describe("API", func() {
 
 		Context("with an invalid build guid", func() {
 			It("returns 404", func() {
+				Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
+			})
+		})
+	})
+
+	Describe("/builds/:guid/log/input", func() {
+		var build builds.Build
+		var endpoint string
+
+		var conn *websocket.Conn
+		var response *http.Response
+
+		BeforeEach(func() {
+			build = builds.Build{
+				Guid: "some-guid",
+			}
+
+			endpoint = fmt.Sprintf(
+				"ws://%s/builds/%s/log/input",
+				server.Listener.Addr().String(),
+				build.Guid,
+			)
+		})
+
+		Context("with a valid build guid", func() {
+			BeforeEach(func() {
+				build = createBuild(
+					builds.Build{
+						Image:  "ubuntu",
+						Script: "ls -al /",
+						Environment: map[string]string{
+							"FOO": "bar",
+						},
+					},
+				)
+
+				endpoint = fmt.Sprintf(
+					"ws://%s/builds/%s/log/input",
+					server.Listener.Addr().String(),
+					build.Guid,
+				)
+			})
+
+			It("returns 101", func() {
+				_, response, err := websocket.DefaultDialer.Dial(endpoint, nil)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(response.StatusCode).Should(Equal(http.StatusSwitchingProtocols))
+			})
+
+			Context("when messages are written", func() {
+				BeforeEach(func() {
+					var err error
+
+					conn, response, err = websocket.DefaultDialer.Dial(endpoint, nil)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					err = conn.WriteMessage(websocket.BinaryMessage, []byte("hello1"))
+					Ω(err).ShouldNot(HaveOccurred())
+
+					err = conn.WriteMessage(websocket.BinaryMessage, []byte("hello2\n"))
+					Ω(err).ShouldNot(HaveOccurred())
+
+					err = conn.WriteMessage(websocket.BinaryMessage, []byte("hello3"))
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				outputSink := func() *gbytes.Buffer {
+					outEndpoint := fmt.Sprintf(
+						"ws://%s/builds/%s/log/output",
+						server.Listener.Addr().String(),
+						build.Guid,
+					)
+
+					outConn, outResponse, err := websocket.DefaultDialer.Dial(outEndpoint, nil)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(outResponse.StatusCode).Should(Equal(http.StatusSwitchingProtocols))
+
+					buf := gbytes.NewBuffer()
+
+					go func() {
+						for {
+							_, msg, err := outConn.ReadMessage()
+							if err != nil {
+								break
+							}
+
+							buf.Write(msg)
+						}
+					}()
+
+					return buf
+				}
+
+				It("presents them to /builds/{guid}/logs/output", func() {
+					Eventually(outputSink()).Should(gbytes.Say("hello1hello2\nhello3"))
+				})
+
+				It("streams them to all open connections to /build/{guid}/logs/output", func() {
+					sink1 := outputSink()
+					sink2 := outputSink()
+
+					err := conn.WriteMessage(websocket.BinaryMessage, []byte("some message"))
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Eventually(sink1).Should(gbytes.Say("some message"))
+					Eventually(sink2).Should(gbytes.Say("some message"))
+				})
+			})
+		})
+
+		Context("with an invalid build guid", func() {
+			It("returns 404", func() {
+				_, response, err := websocket.DefaultDialer.Dial(endpoint, nil)
+				Ω(err).Should(HaveOccurred())
+
 				Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
 			})
 		})

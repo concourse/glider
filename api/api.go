@@ -4,29 +4,28 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/rcrowley/go-tigertonic"
+	"github.com/gorilla/mux"
 	"github.com/winston-ci/redgreen/api/builds"
 )
 
 func New(logger *log.Logger, peerAddr, proleURL string) http.Handler {
-	mux := tigertonic.NewTrieServeMux()
+	router := mux.NewRouter()
 
 	builds := builds.NewHandler(peerAddr, proleURL)
 
-	mux.Handle("POST", "/builds", logged(logger, builds.PostHandler()))
-	mux.Handle("GET", "/builds", logged(logger, builds.GetHandler()))
+	router.Methods("POST").Path("/builds").HandlerFunc(builds.Post)
+	router.Methods("GET").Path("/builds").HandlerFunc(builds.Get)
 
-	mux.Handle("POST", "/builds/{guid}/bits", builds.PostBitsHandler())
-	mux.Handle("GET", "/builds/{guid}/bits", builds.GetBitsHandler())
+	buildRouter := router.PathPrefix("/builds/{guid}").Subrouter()
 
-	mux.Handle("PUT", "/builds/{guid}/result", logged(logger, builds.PutResultHandler()))
-	mux.Handle("GET", "/builds/{guid}/result", logged(logger, builds.GetResultHandler()))
+	buildRouter.Methods("POST").Path("/bits").HandlerFunc(builds.PostBits)
+	buildRouter.Methods("GET").Path("/bits").HandlerFunc(builds.GetBits)
 
-	return mux
-}
+	buildRouter.Methods("PUT").Path("/result").HandlerFunc(builds.PutResult)
+	buildRouter.Methods("GET").Path("/result").HandlerFunc(builds.GetResult)
 
-func logged(logger *log.Logger, handler http.Handler) http.Handler {
-	logged := tigertonic.Logged(handler, nil)
-	logged.Logger = logger
-	return logged
+	buildRouter.Path("/log/input").HandlerFunc(builds.LogInput)
+	buildRouter.Path("/log/output").HandlerFunc(builds.LogOutput)
+
+	return router
 }

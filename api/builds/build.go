@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/winston-ci/redgreen/logbuffer"
 )
 
 type Build struct {
@@ -16,7 +18,9 @@ type Build struct {
 	Status      string            `json:"status"`
 
 	bits        chan *http.Request `json:"-"`
-	servingBits sync.WaitGroup
+	servingBits *sync.WaitGroup
+
+	logBuffer *logbuffer.LogBuffer
 }
 
 type BuildResult struct {

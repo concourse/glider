@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/rcrowley/go-tigertonic"
 	"github.com/winston-ci/redgreen/api"
 )
 
@@ -38,8 +38,6 @@ func main() {
 
 	handler := api.New(logger, *peerAddr, *proleURL)
 
-	server := tigertonic.NewServer(*listenAddr, handler)
-
-	err := server.ListenAndServe()
+	err := http.ListenAndServe(*listenAddr, handler)
 	logger.Fatalln("listen error:", err)
 }

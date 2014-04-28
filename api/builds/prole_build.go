@@ -1,11 +1,9 @@
 package builds
 
-import "github.com/cloudfoundry-incubator/runtime-schema/models"
-
 type ProleBuild struct {
 	Guid string `json:"guid"`
 
-	LogConfig models.LogConfig `json:"log"`
+	LogsURL string `json:"log"`
 
 	Image  string `json:"image"`
 	Script string `json:"script"`
