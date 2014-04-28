@@ -44,6 +44,8 @@ func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
 
 		build.logBuffer.Write(msg)
 	}
+
+	conn.Close()
 }
 
 func (handler *Handler) LogOutput(w http.ResponseWriter, r *http.Request) {
