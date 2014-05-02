@@ -206,8 +206,8 @@ var _ = Describe("API", func() {
 					Image:  "ubuntu",
 					Path:   "some/path",
 					Script: "ls -al /",
-					Environment: map[string]string{
-						"FOO": "bar",
+					Env: [][2]string{
+						{"FOO", "bar"},
 					},
 				})
 			})
@@ -219,21 +219,19 @@ var _ = Describe("API", func() {
 						ghttp.VerifyJSONRepresenting(builds.ProleBuild{
 							Guid: build.Guid,
 
-							LogsURL: "ws://peer-addr/builds/" + build.Guid + "/log/input",
-
-							Image:  "ubuntu",
+							Image: "ubuntu",
+							Env: [][2]string{
+								{"FOO", "bar"},
+							},
 							Script: "ls -al /",
+
+							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
+							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
 
 							Source: builds.ProleBuildSource{
 								Type: "raw",
 								URI:  "http://peer-addr/builds/" + build.Guid + "/bits",
 								Path: "some/path",
-							},
-
-							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
-
-							Parameters: map[string]string{
-								"FOO": "bar",
 							},
 						}),
 						ghttp.RespondWith(201, ""),
@@ -380,9 +378,6 @@ var _ = Describe("API", func() {
 					builds.Build{
 						Image:  "ubuntu",
 						Script: "ls -al /",
-						Environment: map[string]string{
-							"FOO": "bar",
-						},
 					},
 				)
 			})
@@ -437,9 +432,6 @@ var _ = Describe("API", func() {
 					builds.Build{
 						Image:  "ubuntu",
 						Script: "ls -al /",
-						Environment: map[string]string{
-							"FOO": "bar",
-						},
 					},
 				)
 

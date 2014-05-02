@@ -44,7 +44,7 @@ func (handler *Handler) PostBits(w http.ResponseWriter, r *http.Request) {
 
 		Callback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
 
-		Parameters: build.Environment,
+		Env: build.Env,
 	}
 
 	err := json.NewEncoder(buf).Encode(proleBuild)
