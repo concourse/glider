@@ -6,12 +6,8 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/gorilla/context",
-			"Rev": "1be7a086a5fd6440ef16fe96baeda0c78282b980"
-		},
-		{
-			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "9ede152210fa25c1377d33e867cb828c19316445"
+			"ImportPath": "github.com/bmizerany/pat",
+			"Rev": "51b7af73e39f6dc59846b22d56ca886d105ef0c3"
 		},
 		{
 			"ImportPath": "github.com/gorilla/websocket",
@@ -28,6 +24,10 @@
 		{
 			"ImportPath": "github.com/onsi/gomega",
 			"Rev": "af40dc423678b84288e18d0b993770cf9d599a68"
+		},
+		{
+			"ImportPath": "github.com/tedsuo/router",
+			"Rev": "ff4992c52c392a38d24b14144508fc7447a1c8e6"
 		}
 	]
 }
