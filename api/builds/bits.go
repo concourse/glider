@@ -8,12 +8,10 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	"github.com/gorilla/mux"
 )
 
-func (handler *Handler) PostBits(w http.ResponseWriter, r *http.Request) {
-	guid := mux.Vars(r)["guid"]
+func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
+	guid := r.FormValue(":guid")
 
 	handler.buildsMutex.RLock()
 	build, found := handler.builds[guid]
@@ -78,8 +76,8 @@ func (handler *Handler) PostBits(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (handler *Handler) GetBits(w http.ResponseWriter, r *http.Request) {
-	guid := mux.Vars(r)["guid"]
+func (handler *Handler) DownloadBits(w http.ResponseWriter, r *http.Request) {
+	guid := r.FormValue(":guid")
 
 	handler.buildsMutex.RLock()
 	build, found := handler.builds[guid]

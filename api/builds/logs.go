@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 )
 
@@ -18,7 +17,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
-	guid := mux.Vars(r)["guid"]
+	guid := r.FormValue(":guid")
 
 	handler.buildsMutex.RLock()
 	build, found := handler.builds[guid]
@@ -49,7 +48,7 @@ func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *Handler) LogOutput(w http.ResponseWriter, r *http.Request) {
-	guid := mux.Vars(r)["guid"]
+	guid := r.FormValue(":guid")
 
 	handler.buildsMutex.RLock()
 	build, found := handler.builds[guid]

@@ -13,7 +13,7 @@ import (
 	"github.com/winston-ci/redgreen/logbuffer"
 )
 
-func (handler *Handler) Post(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) CreateBuild(w http.ResponseWriter, r *http.Request) {
 	var build Build
 	err := json.NewDecoder(r.Body).Decode(&build)
 	if err != nil {
@@ -48,7 +48,7 @@ func (handler *Handler) Post(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(build)
 }
 
-func (handler *Handler) Get(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) GetBuild(w http.ResponseWriter, r *http.Request) {
 	handler.buildsMutex.RLock()
 
 	builds := make([]Build, len(handler.builds))

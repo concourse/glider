@@ -4,28 +4,28 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/tedsuo/router"
+
 	"github.com/winston-ci/redgreen/api/builds"
+	"github.com/winston-ci/redgreen/routes"
 )
 
-func New(logger *log.Logger, peerAddr, proleURL string) http.Handler {
-	router := mux.NewRouter()
-
+func New(logger *log.Logger, peerAddr, proleURL string) (http.Handler, error) {
 	builds := builds.NewHandler(peerAddr, proleURL)
 
-	router.Methods("POST").Path("/builds").HandlerFunc(builds.Post)
-	router.Methods("GET").Path("/builds").HandlerFunc(builds.Get)
+	handlers := map[string]http.Handler{
+		routes.CreateBuild: http.HandlerFunc(builds.CreateBuild),
+		routes.GetBuild:    http.HandlerFunc(builds.GetBuild),
 
-	buildRouter := router.PathPrefix("/builds/{guid}").Subrouter()
+		routes.UploadBits:   http.HandlerFunc(builds.UploadBits),
+		routes.DownloadBits: http.HandlerFunc(builds.DownloadBits),
 
-	buildRouter.Methods("POST").Path("/bits").HandlerFunc(builds.PostBits)
-	buildRouter.Methods("GET").Path("/bits").HandlerFunc(builds.GetBits)
+		routes.SetResult: http.HandlerFunc(builds.SetResult),
+		routes.GetResult: http.HandlerFunc(builds.GetResult),
 
-	buildRouter.Methods("PUT").Path("/result").HandlerFunc(builds.PutResult)
-	buildRouter.Methods("GET").Path("/result").HandlerFunc(builds.GetResult)
+		routes.LogInput:  http.HandlerFunc(builds.LogInput),
+		routes.LogOutput: http.HandlerFunc(builds.LogOutput),
+	}
 
-	buildRouter.Path("/log/input").HandlerFunc(builds.LogInput)
-	buildRouter.Path("/log/output").HandlerFunc(builds.LogOutput)
-
-	return router
+	return router.NewRouter(routes.Routes, handlers)
 }

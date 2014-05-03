@@ -4,12 +4,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
-func (handler *Handler) PutResult(w http.ResponseWriter, r *http.Request) {
-	guid := mux.Vars(r)["guid"]
+func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
+	guid := r.FormValue(":guid")
 
 	handler.buildsMutex.RLock()
 	build, found := handler.builds[guid]
@@ -39,7 +37,7 @@ func (handler *Handler) PutResult(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *Handler) GetResult(w http.ResponseWriter, r *http.Request) {
-	guid := mux.Vars(r)["guid"]
+	guid := r.FormValue(":guid")
 
 	handler.buildsMutex.RLock()
 	build, found := handler.builds[guid]

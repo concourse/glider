@@ -30,7 +30,8 @@ var _ = Describe("API", func() {
 	BeforeEach(func() {
 		proleServer = ghttp.NewServer()
 
-		handler := api.New(log.New(GinkgoWriter, "test", 0), "peer-addr", proleServer.URL())
+		handler, err := api.New(log.New(GinkgoWriter, "test", 0), "peer-addr", proleServer.URL())
+		Ω(err).ShouldNot(HaveOccurred())
 
 		server = httptest.NewServer(handler)
 		client = &http.Client{
