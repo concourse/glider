@@ -36,8 +36,11 @@ func main() {
 
 	logger := log.New(os.Stdout, "", 0)
 
-	handler := api.New(logger, *peerAddr, *proleURL)
+	handler, err := api.New(logger, *peerAddr, *proleURL)
+	if err != nil {
+		log.Fatalln("failed to initialize handler:", err)
+	}
 
-	err := http.ListenAndServe(*listenAddr, handler)
+	err = http.ListenAndServe(*listenAddr, handler)
 	logger.Fatalln("listen error:", err)
 }
