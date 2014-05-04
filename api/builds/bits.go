@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/winston-ci/prole/api/builds"
 )
 
 func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +28,7 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 	buf := new(bytes.Buffer)
 
-	proleBuild := ProleBuild{
+	proleBuild := builds.Build{
 		Guid: build.Guid,
 
 		LogsURL: "ws://" + handler.peerAddr + "/builds/" + build.Guid + "/log/input",
@@ -34,7 +36,7 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		Image:  build.Image,
 		Script: build.Script,
 
-		Source: ProleBuildSource{
+		Source: builds.BuildSource{
 			Type: "raw",
 			URI:  "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
 			Path: build.Path,

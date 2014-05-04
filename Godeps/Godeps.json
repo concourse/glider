@@ -28,6 +28,10 @@
 		{
 			"ImportPath": "github.com/tedsuo/router",
 			"Rev": "ff4992c52c392a38d24b14144508fc7447a1c8e6"
+		},
+		{
+			"ImportPath": "github.com/winston-ci/prole/api/builds",
+			"Rev": "24938e82c8c1d4bc2e674b4fb341c86ca660734c"
 		}
 	]
 }

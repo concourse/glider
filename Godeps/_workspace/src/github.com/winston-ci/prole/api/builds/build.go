@@ -1,6 +1,6 @@
 package builds
 
-type ProleBuild struct {
+type Build struct {
 	Guid string `json:"guid"`
 
 	Image  string      `json:"image"`
@@ -10,14 +10,15 @@ type ProleBuild struct {
 	LogsURL  string `json:"logs_url"`
 	Callback string `json:"callback"`
 
-	Source ProleBuildSource `json:"source"`
+	Source BuildSource `json:"source"`
 
 	Status string `json:"status"`
 }
 
-type ProleBuildSource struct {
-	Type string `json:"type"`
-	URI  string `json:"uri"`
-	Ref  string `json:"ref"`
-	Path string `json:"path"`
+type BuildSource struct {
+	Type   string `json:"type"`
+	URI    string `json:"uri"`
+	Branch string `json:"branch"`
+	Ref    string `json:"ref"`
+	Path   string `json:"path"`
 }
