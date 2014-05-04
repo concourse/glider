@@ -15,7 +15,7 @@ type Build struct {
 	Path      string      `json:"path"`
 	Script    string      `json:"script"`
 	Env       [][2]string `json:"env"`
-	Status    string      `json:"status"`
+	Status    string      `json:"status,omitempty"`
 
 	bits        chan *http.Request
 	servingBits *sync.WaitGroup
