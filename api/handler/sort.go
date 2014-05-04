@@ -1,6 +1,8 @@
-package builds
+package handler
 
-type ByCreatedAt []Build
+import "github.com/winston-ci/redgreen/api/builds"
+
+type ByCreatedAt []builds.Build
 
 func (builds ByCreatedAt) Len() int {
 	return len(builds)

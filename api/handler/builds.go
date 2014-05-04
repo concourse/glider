@@ -1,4 +1,4 @@
-package builds
+package handler
 
 import (
 	"encoding/json"
@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/nu7hatch/gouuid"
+
+	"github.com/winston-ci/redgreen/api/builds"
 	"github.com/winston-ci/redgreen/logbuffer"
 )
 
 func (handler *Handler) CreateBuild(w http.ResponseWriter, r *http.Request) {
-	var build Build
+	var build builds.Build
 	err := json.NewDecoder(r.Body).Decode(&build)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -34,11 +36,19 @@ func (handler *Handler) CreateBuild(w http.ResponseWriter, r *http.Request) {
 
 	build.Guid = uuid.String()
 	build.CreatedAt = time.Now()
-	build.bits = make(chan *http.Request, 1)
-	build.servingBits = &sync.WaitGroup{}
-	build.logBuffer = logbuffer.NewLogBuffer()
 
 	log.Println("registering", build.Guid)
+
+	handler.bitsMutex.Lock()
+	handler.bits[build.Guid] = BitsSession{
+		bits:        make(chan *http.Request, 1),
+		servingBits: &sync.WaitGroup{},
+	}
+	handler.bitsMutex.Unlock()
+
+	handler.logsMutex.Lock()
+	handler.logs[build.Guid] = logbuffer.NewLogBuffer()
+	handler.logsMutex.Unlock()
 
 	handler.buildsMutex.Lock()
 	handler.builds[build.Guid] = &build
@@ -51,7 +61,7 @@ func (handler *Handler) CreateBuild(w http.ResponseWriter, r *http.Request) {
 func (handler *Handler) GetBuild(w http.ResponseWriter, r *http.Request) {
 	handler.buildsMutex.RLock()
 
-	builds := make([]Build, len(handler.builds))
+	builds := make([]builds.Build, len(handler.builds))
 
 	i := 0
 	for _, build := range handler.builds {
@@ -67,7 +77,7 @@ func (handler *Handler) GetBuild(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(builds)
 }
 
-func (handler *Handler) validateBuild(build Build) error {
+func (handler *Handler) validateBuild(build builds.Build) error {
 	if build.Image == "" {
 		return errors.New("missing build image")
 	}

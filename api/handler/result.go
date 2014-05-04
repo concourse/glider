@@ -1,9 +1,11 @@
-package builds
+package handler
 
 import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	"github.com/winston-ci/redgreen/api/builds"
 )
 
 func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
@@ -18,7 +20,7 @@ func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var result BuildResult
+	var result builds.BuildResult
 	err := json.NewDecoder(r.Body).Decode(&result)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -29,8 +31,11 @@ func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
 
 	handler.buildsMutex.Lock()
 	build.Status = result.Status
-	build.logBuffer.Close()
 	handler.buildsMutex.Unlock()
+
+	handler.logsMutex.Lock()
+	handler.logs[build.Guid].Close()
+	handler.logsMutex.Unlock()
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
@@ -49,5 +54,5 @@ func (handler *Handler) GetResult(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(BuildResult{build.Status})
+	json.NewEncoder(w).Encode(builds.BuildResult{build.Status})
 }

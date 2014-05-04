@@ -17,6 +17,7 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
 
+	ProleBuilds "github.com/winston-ci/prole/api/builds"
 	"github.com/winston-ci/redgreen/api"
 	"github.com/winston-ci/redgreen/api/builds"
 )
@@ -217,7 +218,7 @@ var _ = Describe("API", func() {
 				proleServer.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/builds"),
-						ghttp.VerifyJSONRepresenting(builds.ProleBuild{
+						ghttp.VerifyJSONRepresenting(ProleBuilds.Build{
 							Guid: build.Guid,
 
 							Image: "ubuntu",
@@ -229,7 +230,7 @@ var _ = Describe("API", func() {
 							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
 							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
 
-							Source: builds.ProleBuildSource{
+							Source: ProleBuilds.BuildSource{
 								Type: "raw",
 								URI:  "http://peer-addr/builds/" + build.Guid + "/bits",
 								Path: "some/path",

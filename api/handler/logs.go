@@ -1,4 +1,4 @@
-package builds
+package handler
 
 import (
 	"log"
@@ -19,9 +19,9 @@ var upgrader = websocket.Upgrader{
 func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
 	guid := r.FormValue(":guid")
 
-	handler.buildsMutex.RLock()
-	build, found := handler.builds[guid]
-	handler.buildsMutex.RUnlock()
+	handler.logsMutex.RLock()
+	logBuffer, found := handler.logs[guid]
+	handler.logsMutex.RUnlock()
 
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
@@ -41,7 +41,7 @@ func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		build.logBuffer.Write(msg)
+		logBuffer.Write(msg)
 	}
 
 	conn.Close()
@@ -50,9 +50,9 @@ func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
 func (handler *Handler) LogOutput(w http.ResponseWriter, r *http.Request) {
 	guid := r.FormValue(":guid")
 
-	handler.buildsMutex.RLock()
-	build, found := handler.builds[guid]
-	handler.buildsMutex.RUnlock()
+	handler.logsMutex.RLock()
+	logBuffer, found := handler.logs[guid]
+	handler.logsMutex.RUnlock()
 
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
@@ -65,5 +65,5 @@ func (handler *Handler) LogOutput(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	build.logBuffer.Attach(conn)
+	logBuffer.Attach(conn)
 }

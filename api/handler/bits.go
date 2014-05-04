@@ -1,4 +1,4 @@
-package builds
+package handler
 
 import (
 	"bytes"
@@ -64,13 +64,15 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 	res.Body.Close()
 
 	if res.StatusCode == http.StatusCreated {
-		build.servingBits.Add(1)
-
 		w.WriteHeader(http.StatusCreated)
 
-		build.bits <- r
+		handler.bitsMutex.RLock()
+		session := handler.bits[guid]
+		handler.bitsMutex.RUnlock()
 
-		build.servingBits.Wait()
+		session.servingBits.Add(1)
+		session.bits <- r
+		session.servingBits.Wait()
 	} else {
 		log.Println("prole failed:")
 		res.Write(os.Stderr)
@@ -81,9 +83,9 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 func (handler *Handler) DownloadBits(w http.ResponseWriter, r *http.Request) {
 	guid := r.FormValue(":guid")
 
-	handler.buildsMutex.RLock()
-	build, found := handler.builds[guid]
-	handler.buildsMutex.RUnlock()
+	handler.bitsMutex.RLock()
+	session, found := handler.bits[guid]
+	handler.bitsMutex.RUnlock()
 
 	if !found {
 		w.WriteHeader(http.StatusNotFound)
@@ -93,15 +95,15 @@ func (handler *Handler) DownloadBits(w http.ResponseWriter, r *http.Request) {
 	var bits *http.Request
 
 	select {
-	case bits = <-build.bits:
+	case bits = <-session.bits:
 	case <-time.After(time.Second):
 		w.WriteHeader(404)
 		return
 	}
 
-	log.Println("serving bits for", build.Guid)
+	log.Println("serving bits for", guid)
 
-	defer build.servingBits.Done()
+	defer session.servingBits.Done()
 
 	w.Header().Set("Content-Type", bits.Header.Get("Content-Type"))
 
