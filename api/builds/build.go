@@ -1,12 +1,6 @@
 package builds
 
-import (
-	"net/http"
-	"sync"
-	"time"
-
-	"github.com/winston-ci/redgreen/logbuffer"
-)
+import "time"
 
 type Build struct {
 	Guid      string      `json:"guid"`
@@ -16,11 +10,6 @@ type Build struct {
 	Script    string      `json:"script"`
 	Env       [][2]string `json:"env"`
 	Status    string      `json:"status,omitempty"`
-
-	bits        chan *http.Request
-	servingBits *sync.WaitGroup
-
-	logBuffer *logbuffer.LogBuffer
 }
 
 type BuildResult struct {
