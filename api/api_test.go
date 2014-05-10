@@ -40,6 +40,10 @@ var _ = Describe("API", func() {
 		}
 	})
 
+	AfterEach(func() {
+		server.Close()
+	})
+
 	buildPayload := func(build *builds.Build) string {
 		payload, err := json.Marshal(build)
 		Ω(err).ShouldNot(HaveOccurred())
