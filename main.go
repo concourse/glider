@@ -17,8 +17,8 @@ var listenAddr = flag.String(
 
 var peerAddr = flag.String(
 	"peerAddr",
-	"",
-	"address reachable by other nodes",
+	"127.0.0.1:5637",
+	"external address of the redgreen server, used for callbacks",
 )
 
 var proleURL = flag.String(
