@@ -451,8 +451,10 @@ var _ = Describe("API", func() {
 			})
 
 			It("returns 101", func() {
-				_, response, err := websocket.DefaultDialer.Dial(endpoint, nil)
+				conn, response, err := websocket.DefaultDialer.Dial(endpoint, nil)
 				Ω(err).ShouldNot(HaveOccurred())
+
+				defer conn.Close()
 
 				Ω(response.StatusCode).Should(Equal(http.StatusSwitchingProtocols))
 			})
@@ -472,6 +474,10 @@ var _ = Describe("API", func() {
 
 					err = conn.WriteMessage(websocket.BinaryMessage, []byte("hello3"))
 					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				AfterEach(func() {
+					conn.Close()
 				})
 
 				outputSink := func() *gbytes.Buffer {
