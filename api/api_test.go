@@ -234,10 +234,12 @@ var _ = Describe("API", func() {
 							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
 							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
 
-							Source: ProleBuilds.BuildSource{
-								Type: "raw",
-								URI:  "http://peer-addr/builds/" + build.Guid + "/bits",
-								Path: "some/path",
+							Sources: []ProleBuilds.BuildSource{
+								{
+									Type: "raw",
+									URI:  "http://peer-addr/builds/" + build.Guid + "/bits",
+									Path: "some/path",
+								},
 							},
 						}),
 						ghttp.RespondWith(201, ""),

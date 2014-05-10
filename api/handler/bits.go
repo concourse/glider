@@ -36,10 +36,12 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		Image:  build.Image,
 		Script: build.Script,
 
-		Source: builds.BuildSource{
-			Type: "raw",
-			URI:  "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
-			Path: build.Path,
+		Sources: []builds.BuildSource{
+			{
+				Type: "raw",
+				URI:  "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
+				Path: build.Path,
+			},
 		},
 
 		Callback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
