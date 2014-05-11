@@ -3,6 +3,8 @@ package builds
 type Build struct {
 	Guid string `json:"guid"`
 
+	ConfigPath string `json:"config"`
+
 	Image  string      `json:"image"`
 	Env    [][2]string `json:"env"`
 	Script string      `json:"script"`
@@ -10,7 +12,7 @@ type Build struct {
 	LogsURL  string `json:"logs_url"`
 	Callback string `json:"callback"`
 
-	Source BuildSource `json:"source"`
+	Sources []BuildSource `json:"sources"`
 
 	Status string `json:"status"`
 }
