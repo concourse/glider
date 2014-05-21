@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"code.google.com/p/go.net/websocket"
 	"github.com/tedsuo/router"
 
 	"github.com/winston-ci/redgreen/api/handler"
@@ -23,8 +24,8 @@ func New(logger *log.Logger, peerAddr, proleURL string) (http.Handler, error) {
 		routes.SetResult: http.HandlerFunc(builds.SetResult),
 		routes.GetResult: http.HandlerFunc(builds.GetResult),
 
-		routes.LogInput:  http.HandlerFunc(builds.LogInput),
-		routes.LogOutput: http.HandlerFunc(builds.LogOutput),
+		routes.LogInput:  websocket.Server{Handler: builds.LogInput},
+		routes.LogOutput: websocket.Server{Handler: builds.LogOutput},
 	}
 
 	return router.NewRouter(routes.Routes, handlers)

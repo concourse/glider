@@ -33,10 +33,6 @@ func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
 	build.Status = result.Status
 	handler.buildsMutex.Unlock()
 
-	handler.logsMutex.Lock()
-	handler.logs[build.Guid].Close()
-	handler.logsMutex.Unlock()
-
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
 }

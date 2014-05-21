@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"code.google.com/p/go.net/websocket"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -421,8 +422,7 @@ var _ = Describe("API", func() {
 		var build builds.Build
 		var endpoint string
 
-		var conn *websocket.Conn
-		var response *http.Response
+		var conn io.ReadWriteCloser
 
 		BeforeEach(func() {
 			build = builds.Build{
@@ -452,29 +452,20 @@ var _ = Describe("API", func() {
 				)
 			})
 
-			It("returns 101", func() {
-				conn, response, err := websocket.DefaultDialer.Dial(endpoint, nil)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				defer conn.Close()
-
-				Ω(response.StatusCode).Should(Equal(http.StatusSwitchingProtocols))
-			})
-
 			Context("when messages are written", func() {
 				BeforeEach(func() {
 					var err error
 
-					conn, response, err = websocket.DefaultDialer.Dial(endpoint, nil)
+					conn, err = websocket.Dial(endpoint, "", "http://0.0.0.0")
 					Ω(err).ShouldNot(HaveOccurred())
 
-					err = conn.WriteMessage(websocket.BinaryMessage, []byte("hello1"))
+					_, err = conn.Write([]byte("hello1"))
 					Ω(err).ShouldNot(HaveOccurred())
 
-					err = conn.WriteMessage(websocket.BinaryMessage, []byte("hello2\n"))
+					_, err = conn.Write([]byte("hello2\n"))
 					Ω(err).ShouldNot(HaveOccurred())
 
-					err = conn.WriteMessage(websocket.BinaryMessage, []byte("hello3"))
+					_, err = conn.Write([]byte("hello3"))
 					Ω(err).ShouldNot(HaveOccurred())
 				})
 
@@ -489,23 +480,12 @@ var _ = Describe("API", func() {
 						build.Guid,
 					)
 
-					outConn, outResponse, err := websocket.DefaultDialer.Dial(outEndpoint, nil)
+					outConn, err := websocket.Dial(outEndpoint, "", "http://0.0.0.0")
 					Ω(err).ShouldNot(HaveOccurred())
-
-					Ω(outResponse.StatusCode).Should(Equal(http.StatusSwitchingProtocols))
 
 					buf := gbytes.NewBuffer()
 
-					go func() {
-						for {
-							_, msg, err := outConn.ReadMessage()
-							if err != nil {
-								break
-							}
-
-							buf.Write(msg)
-						}
-					}()
+					go io.Copy(buf, outConn)
 
 					return buf
 				}
@@ -518,21 +498,12 @@ var _ = Describe("API", func() {
 					sink1 := outputSink()
 					sink2 := outputSink()
 
-					err := conn.WriteMessage(websocket.BinaryMessage, []byte("some message"))
+					_, err := conn.Write([]byte("some message"))
 					Ω(err).ShouldNot(HaveOccurred())
 
 					Eventually(sink1).Should(gbytes.Say("some message"))
 					Eventually(sink2).Should(gbytes.Say("some message"))
 				})
-			})
-		})
-
-		Context("with an invalid build guid", func() {
-			It("returns 404", func() {
-				_, response, err := websocket.DefaultDialer.Dial(endpoint, nil)
-				Ω(err).Should(HaveOccurred())
-
-				Ω(response.StatusCode).Should(Equal(http.StatusNotFound))
 			})
 		})
 	})
