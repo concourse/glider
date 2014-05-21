@@ -6,12 +6,13 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/bmizerany/pat",
-			"Rev": "48be7df2c27e1cec821a3284a683ce6ef90d9052"
+			"ImportPath": "code.google.com/p/go.net/websocket",
+			"Comment": "null-116",
+			"Rev": "89dbba2db2d45f337bb06f974ec45d3c426a5072"
 		},
 		{
-			"ImportPath": "github.com/gorilla/websocket",
-			"Rev": "10a95d14a3a215f5e2045d3dbbcd29f1ab209586"
+			"ImportPath": "github.com/bmizerany/pat",
+			"Rev": "48be7df2c27e1cec821a3284a683ce6ef90d9052"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
