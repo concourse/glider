@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -33,20 +34,23 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 		LogsURL: "ws://" + handler.peerAddr + "/builds/" + build.Guid + "/log/input",
 
-		Image:  build.Image,
-		Script: build.Script,
+		Config: builds.Config{
+			Image:  build.Image,
+			Script: build.Script,
+			Env:    build.Env,
+		},
 
-		Sources: []builds.BuildSource{
+		Inputs: []builds.Input{
 			{
 				Type: "raw",
-				URI:  "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
-				Path: build.Path,
+
+				Source: builds.Source(fmt.Sprintf(`{"uri":%q}`, "http://"+handler.peerAddr+"/builds/"+build.Guid+"/bits")),
+
+				DestinationPath: build.Path,
 			},
 		},
 
 		Callback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
-
-		Env: build.Env,
 	}
 
 	err := json.NewEncoder(buf).Encode(proleBuild)

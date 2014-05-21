@@ -225,20 +225,22 @@ var _ = Describe("API", func() {
 						ghttp.VerifyJSONRepresenting(ProleBuilds.Build{
 							Guid: build.Guid,
 
-							Image: "ubuntu",
-							Env: [][2]string{
-								{"FOO", "bar"},
+							Config: ProleBuilds.Config{
+								Image: "ubuntu",
+								Env: [][2]string{
+									{"FOO", "bar"},
+								},
+								Script: "ls -al /",
 							},
-							Script: "ls -al /",
 
 							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
 							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
 
-							Sources: []ProleBuilds.BuildSource{
+							Inputs: []ProleBuilds.Input{
 								{
-									Type: "raw",
-									URI:  "http://peer-addr/builds/" + build.Guid + "/bits",
-									Path: "some/path",
+									Type:            "raw",
+									Source:          ProleBuilds.Source(fmt.Sprintf(`{"uri":%q}`, "http://peer-addr/builds/"+build.Guid+"/bits")),
+									DestinationPath: "some/path",
 								},
 							},
 						}),
