@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/winston-ci/logbuffer"
 	"github.com/winston-ci/redgreen/api/builds"
-	"github.com/winston-ci/redgreen/logbuffer"
 )
 
 type Handler struct {

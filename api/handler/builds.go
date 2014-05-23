@@ -11,8 +11,8 @@ import (
 
 	"github.com/nu7hatch/gouuid"
 
+	"github.com/winston-ci/logbuffer"
 	"github.com/winston-ci/redgreen/api/builds"
-	"github.com/winston-ci/redgreen/logbuffer"
 )
 
 func (handler *Handler) CreateBuild(w http.ResponseWriter, r *http.Request) {
