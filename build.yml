@@ -20,4 +20,3 @@ script: |
   go install github.com/onsi/ginkgo/ginkgo
 
   ginkgo -r -nodes=4
-
