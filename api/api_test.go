@@ -226,6 +226,8 @@ var _ = Describe("API", func() {
 						ghttp.VerifyJSONRepresenting(ProleBuilds.Build{
 							Guid: build.Guid,
 
+							Privileged: true,
+
 							Config: ProleBuilds.Config{
 								Image: "ubuntu",
 								Env: [][2]string{

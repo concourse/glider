@@ -34,6 +34,8 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 		LogsURL: "ws://" + handler.peerAddr + "/builds/" + build.Guid + "/log/input",
 
+		Privileged: true,
+
 		Config: builds.Config{
 			Image:  build.Image,
 			Script: build.Script,
