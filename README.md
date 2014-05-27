@@ -1,4 +1,4 @@
 redgreen
 ========
 
-simple build manager
+simple build manager for local development
