@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -32,7 +31,7 @@ var _ = Describe("API", func() {
 	BeforeEach(func() {
 		proleServer = ghttp.NewServer()
 
-		handler, err := api.New(log.New(GinkgoWriter, "test", 0), "peer-addr", proleServer.URL())
+		handler, err := api.New("peer-addr", proleServer.URL())
 		Ω(err).ShouldNot(HaveOccurred())
 
 		server = httptest.NewServer(handler)

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 
 	"code.google.com/p/go.net/websocket"
@@ -11,7 +10,7 @@ import (
 	"github.com/winston-ci/redgreen/routes"
 )
 
-func New(logger *log.Logger, peerAddr, proleURL string) (http.Handler, error) {
+func New(peerAddr, proleURL string) (http.Handler, error) {
 	builds := handler.NewHandler(peerAddr, proleURL)
 
 	handlers := map[string]http.Handler{

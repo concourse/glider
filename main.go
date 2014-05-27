@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/winston-ci/redgreen/api"
 )
@@ -34,13 +33,11 @@ func main() {
 		log.Fatalln("must specify -peerAddr")
 	}
 
-	logger := log.New(os.Stdout, "", 0)
-
-	handler, err := api.New(logger, *peerAddr, *proleURL)
+	handler, err := api.New(*peerAddr, *proleURL)
 	if err != nil {
 		log.Fatalln("failed to initialize handler:", err)
 	}
 
 	err = http.ListenAndServe(*listenAddr, handler)
-	logger.Fatalln("listen error:", err)
+	log.Fatalln("listen error:", err)
 }
