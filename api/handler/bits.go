@@ -3,7 +3,6 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -46,7 +45,9 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 			{
 				Type: "raw",
 
-				Source: builds.Source(fmt.Sprintf(`{"uri":%q}`, "http://"+handler.peerAddr+"/builds/"+build.Guid+"/bits")),
+				Source: builds.Source{
+					"uri": "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
+				},
 
 				DestinationPath: build.Path,
 			},

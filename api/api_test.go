@@ -240,8 +240,10 @@ var _ = Describe("API", func() {
 
 							Inputs: []ProleBuilds.Input{
 								{
-									Type:            "raw",
-									Source:          ProleBuilds.Source(fmt.Sprintf(`{"uri":%q}`, "http://peer-addr/builds/"+build.Guid+"/bits")),
+									Type: "raw",
+									Source: ProleBuilds.Source{
+										"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
+									},
 									DestinationPath: "some/path",
 								},
 							},
