@@ -36,7 +36,7 @@
 		},
 		{
 			"ImportPath": "github.com/winston-ci/prole/api/builds",
-			"Rev": "07d435b73622a3b87a942cf89df53decc9a12381"
+			"Rev": "7cbec21bdd34f39b920309d6dbdb2deae7d492f2"
 		}
 	]
 }

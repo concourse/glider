@@ -19,7 +19,8 @@ type Build struct {
 	LogsURL  string `json:"logs_url"`
 	Callback string `json:"callback"`
 
-	Inputs []Input `json:"inputs"`
+	Inputs  []Input  `json:"inputs"`
+	Outputs []Output `json:"outputs"`
 
 	Status Status `json:"status"`
 }
@@ -31,22 +32,48 @@ type Config struct {
 	Script string      `json:"script"`
 }
 
-type Source []byte
-
-func (source Source) MarshalJSON() ([]byte, error) {
-	return []byte(source), nil
-}
-
-func (source *Source) UnmarshalJSON(data []byte) error {
-	*source = append((*source)[0:0], data...)
-	return nil
-}
-
 type Input struct {
+	Name string `json:"name"`
+
 	Type string `json:"type"`
 
-	Source Source `json:"source,omitempty"`
+	// e.g. sha
+	Version Version `json:"version,omitempty"`
 
-	ConfigPath      string `json:"configPath"`
-	DestinationPath string `json:"destinationPath"`
+	// e.g. git url, branch, private_key
+	Source Source `json:"source"`
+
+	// e.g. commit_author, commit_date
+	Metadata []MetadataField `json:"metadata,omitempty"`
+
+	ConfigPath      string `json:"config_path"`
+	DestinationPath string `json:"destination_path"`
 }
+
+type Version map[string]interface{}
+
+type Source map[string]interface{}
+
+type MetadataField struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type Output struct {
+	Name string `json:"name"`
+
+	Type string `json:"type"`
+
+	// e.g. sha
+	Version Version `json:"version"`
+
+	// e.g. git url, branch
+	Params Params `json:"params,omitempty"`
+
+	// e.g. commit_author, commit_date, commit_sha
+	Metadata []MetadataField `json:"metadata,omitempty"`
+
+	SourcePath string `json:"sourcePath"`
+}
+
+type Params map[string]interface{}
