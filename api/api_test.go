@@ -212,8 +212,8 @@ var _ = Describe("API", func() {
 					Image:  "ubuntu",
 					Path:   "some/path",
 					Script: "ls -al /",
-					Env: [][2]string{
-						{"FOO", "bar"},
+					Env: []map[string]string{
+						{"FOO": "bar"},
 					},
 				})
 			})
@@ -229,8 +229,8 @@ var _ = Describe("API", func() {
 
 							Config: ProleBuilds.Config{
 								Image: "ubuntu",
-								Env: [][2]string{
-									{"FOO", "bar"},
+								Env: []map[string]string{
+									{"FOO": "bar"},
 								},
 								Script: "ls -al /",
 							},

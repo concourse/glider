@@ -32,11 +32,11 @@
 		},
 		{
 			"ImportPath": "github.com/winston-ci/logbuffer",
-			"Rev": "4a5f810ca01060438e18e20567ff2234b0056c5a"
+			"Rev": "d759e3301e0607785108933dca75c8008ccf5d93"
 		},
 		{
 			"ImportPath": "github.com/winston-ci/prole/api/builds",
-			"Rev": "7cbec21bdd34f39b920309d6dbdb2deae7d492f2"
+			"Rev": "f411485411bebc2cfb26952a3da54ab538937387"
 		}
 	]
 }
