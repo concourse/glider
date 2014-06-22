@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/winston-ci/prole/api/builds"
+	"github.com/concourse/turbine/api/builds"
 )
 
 func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +28,7 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 	buf := new(bytes.Buffer)
 
-	proleBuild := builds.Build{
+	turbineBuild := builds.Build{
 		Guid: build.Guid,
 
 		LogsURL: "ws://" + handler.peerAddr + "/builds/" + build.Guid + "/log/input",
@@ -56,14 +56,14 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		Callback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
 	}
 
-	err := json.NewEncoder(buf).Encode(proleBuild)
+	err := json.NewEncoder(buf).Encode(turbineBuild)
 	if err != nil {
 		panic(err)
 	}
 
 	defer r.Body.Close()
 
-	res, err := http.Post(handler.proleURL+"/builds", "application/json", buf)
+	res, err := http.Post(handler.turbineURL+"/builds", "application/json", buf)
 	if err != nil {
 		log.Println("error triggering build:", err)
 		panic(err)
@@ -83,7 +83,7 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		session.bits <- r
 		session.servingBits.Wait()
 	} else {
-		log.Println("prole failed:")
+		log.Println("turbine failed:")
 		res.Write(os.Stderr)
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}

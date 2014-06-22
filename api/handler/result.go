@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/winston-ci/redgreen/api/builds"
+	"github.com/concourse/glider/api/builds"
 )
 
 func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {

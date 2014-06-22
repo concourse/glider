@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/winston-ci/redgreen/api"
+	"github.com/concourse/glider/api"
 )
 
 var listenAddr = flag.String(
@@ -17,13 +17,13 @@ var listenAddr = flag.String(
 var peerAddr = flag.String(
 	"peerAddr",
 	"127.0.0.1:5637",
-	"external address of the redgreen server, used for callbacks",
+	"external address of the glider server, used for callbacks",
 )
 
-var proleURL = flag.String(
-	"proleURL",
+var turbineURL = flag.String(
+	"turbineURL",
 	"http://127.0.0.1:4637",
-	"address denoting the prole service",
+	"address denoting the turbine service",
 )
 
 func main() {
@@ -33,7 +33,7 @@ func main() {
 		log.Fatalln("must specify -peerAddr")
 	}
 
-	handler, err := api.New(*peerAddr, *proleURL)
+	handler, err := api.New(*peerAddr, *turbineURL)
 	if err != nil {
 		log.Fatalln("failed to initialize handler:", err)
 	}

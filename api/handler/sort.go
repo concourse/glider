@@ -1,6 +1,6 @@
 package handler
 
-import "github.com/winston-ci/redgreen/api/builds"
+import "github.com/concourse/glider/api/builds"
 
 type ByCreatedAt []builds.Build
 

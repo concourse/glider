@@ -6,12 +6,12 @@ import (
 	"code.google.com/p/go.net/websocket"
 	"github.com/tedsuo/router"
 
-	"github.com/winston-ci/redgreen/api/handler"
-	"github.com/winston-ci/redgreen/routes"
+	"github.com/concourse/glider/api/handler"
+	"github.com/concourse/glider/routes"
 )
 
-func New(peerAddr, proleURL string) (http.Handler, error) {
-	builds := handler.NewHandler(peerAddr, proleURL)
+func New(peerAddr, turbineURL string) (http.Handler, error) {
+	builds := handler.NewHandler(peerAddr, turbineURL)
 
 	handlers := map[string]http.Handler{
 		routes.CreateBuild: http.HandlerFunc(builds.CreateBuild),

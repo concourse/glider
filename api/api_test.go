@@ -17,21 +17,21 @@ import (
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
 
-	ProleBuilds "github.com/winston-ci/prole/api/builds"
-	"github.com/winston-ci/redgreen/api"
-	"github.com/winston-ci/redgreen/api/builds"
+	"github.com/concourse/glider/api"
+	"github.com/concourse/glider/api/builds"
+	TurbineBuilds "github.com/concourse/turbine/api/builds"
 )
 
 var _ = Describe("API", func() {
-	var proleServer *ghttp.Server
+	var turbineServer *ghttp.Server
 
 	var server *httptest.Server
 	var client *http.Client
 
 	BeforeEach(func() {
-		proleServer = ghttp.NewServer()
+		turbineServer = ghttp.NewServer()
 
-		handler, err := api.New("peer-addr", proleServer.URL())
+		handler, err := api.New("peer-addr", turbineServer.URL())
 		Ω(err).ShouldNot(HaveOccurred())
 
 		server = httptest.NewServer(handler)
@@ -219,15 +219,15 @@ var _ = Describe("API", func() {
 			})
 
 			BeforeEach(func() {
-				proleServer.AppendHandlers(
+				turbineServer.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/builds"),
-						ghttp.VerifyJSONRepresenting(ProleBuilds.Build{
+						ghttp.VerifyJSONRepresenting(TurbineBuilds.Build{
 							Guid: build.Guid,
 
 							Privileged: true,
 
-							Config: ProleBuilds.Config{
+							Config: TurbineBuilds.Config{
 								Image: "ubuntu",
 								Env: []map[string]string{
 									{"FOO": "bar"},
@@ -238,10 +238,10 @@ var _ = Describe("API", func() {
 							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
 							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
 
-							Inputs: []ProleBuilds.Input{
+							Inputs: []TurbineBuilds.Input{
 								{
 									Type: "raw",
-									Source: ProleBuilds.Source{
+									Source: TurbineBuilds.Source{
 										"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
 									},
 									DestinationPath: "some/path",
@@ -257,9 +257,9 @@ var _ = Describe("API", func() {
 				Ω(response.StatusCode).Should(Equal(http.StatusCreated))
 			})
 
-			Context("when prole fails", func() {
+			Context("when turbine fails", func() {
 				BeforeEach(func() {
-					proleServer.SetHandler(0, ghttp.RespondWith(500, ""))
+					turbineServer.SetHandler(0, ghttp.RespondWith(500, ""))
 				})
 
 				It("returns 500", func() {
@@ -305,7 +305,7 @@ var _ = Describe("API", func() {
 					gotBits := &sync.WaitGroup{}
 					gotBits.Add(1)
 
-					proleServer.AppendHandlers(
+					turbineServer.AppendHandlers(
 						func(w http.ResponseWriter, req *http.Request) {
 							gotBits.Done()
 							w.WriteHeader(201)
