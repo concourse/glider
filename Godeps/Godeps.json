@@ -1,18 +1,26 @@
 {
-	"ImportPath": "github.com/winston-ci/redgreen",
-	"GoVersion": "go1.2.1",
+	"ImportPath": "github.com/concourse/glider",
+	"GoVersion": "go1.3",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
 		{
 			"ImportPath": "code.google.com/p/go.net/websocket",
-			"Comment": "null-133",
-			"Rev": "aa1a4b63e03d4dfef7d5310d70338707e36fc7eb"
+			"Comment": "null-136",
+			"Rev": "28ff664507e453c4455b8c65e701bbe2b2ac980d"
 		},
 		{
 			"ImportPath": "github.com/bmizerany/pat",
 			"Rev": "48be7df2c27e1cec821a3284a683ce6ef90d9052"
+		},
+		{
+			"ImportPath": "github.com/concourse/logbuffer",
+			"Rev": "d759e3301e0607785108933dca75c8008ccf5d93"
+		},
+		{
+			"ImportPath": "github.com/concourse/turbine/api/builds",
+			"Rev": "5cd75242b748f4b8eb24559489b083de1a504dab"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
@@ -20,23 +28,16 @@
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
-			"Rev": "51ddbbc2ace9f9ad4cf06ba63442ea2ef2019837"
+			"Comment": "v1.0.0-16-g12446bb",
+			"Rev": "12446bbcc74950944c897e32ea99cc8d058f9c92"
 		},
 		{
 			"ImportPath": "github.com/onsi/gomega",
-			"Rev": "f5533d435ebfcf4fa0463202dc0e966b983618b8"
+			"Rev": "036273e6f643552b16fe7a6464afd2ae0324992e"
 		},
 		{
 			"ImportPath": "github.com/tedsuo/router",
 			"Rev": "e148496de27fab9f10ef07f3be00471fa59f58b9"
-		},
-		{
-			"ImportPath": "github.com/winston-ci/logbuffer",
-			"Rev": "d759e3301e0607785108933dca75c8008ccf5d93"
-		},
-		{
-			"ImportPath": "github.com/winston-ci/prole/api/builds",
-			"Rev": "f411485411bebc2cfb26952a3da54ab538937387"
 		}
 	]
 }
