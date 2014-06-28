@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
-	"log"
-	"net/http"
+	"os"
 
 	"github.com/concourse/glider/api"
+	"github.com/pivotal-golang/lager"
+	"github.com/tedsuo/ifrit"
+	"github.com/tedsuo/ifrit/http_server"
+	"github.com/tedsuo/ifrit/sigmon"
 )
 
 var listenAddr = flag.String(
@@ -29,15 +32,26 @@ var turbineURL = flag.String(
 func main() {
 	flag.Parse()
 
-	if *peerAddr == "" {
-		log.Fatalln("must specify -peerAddr")
-	}
+	logger := lager.NewLogger("glider")
+	logger.RegisterSink(lager.NewWriterSink(os.Stdout, lager.DEBUG))
 
-	handler, err := api.New(*peerAddr, *turbineURL)
+	handler, err := api.New(logger.Session("api"), *peerAddr, *turbineURL)
 	if err != nil {
-		log.Fatalln("failed to initialize handler:", err)
+		logger.Fatal("failed-to-initialize-handler", err)
 	}
 
-	err = http.ListenAndServe(*listenAddr, handler)
-	log.Fatalln("listen error:", err)
+	server := ifrit.Envoke(http_server.New(*listenAddr, handler))
+	running := ifrit.Envoke(sigmon.New(server))
+
+	logger.Info("listening", lager.Data{
+		"api": *listenAddr,
+	})
+
+	err = <-running.Wait()
+	if err == nil {
+		logger.Info("exited")
+	} else {
+		logger.Error("failed", err)
+		os.Exit(1)
+	}
 }

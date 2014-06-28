@@ -4,14 +4,15 @@ import (
 	"net/http"
 
 	"code.google.com/p/go.net/websocket"
+	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/router"
 
 	"github.com/concourse/glider/api/handler"
 	"github.com/concourse/glider/routes"
 )
 
-func New(peerAddr, turbineURL string) (http.Handler, error) {
-	builds := handler.NewHandler(peerAddr, turbineURL)
+func New(logger lager.Logger, peerAddr, turbineURL string) (http.Handler, error) {
+	builds := handler.NewHandler(logger, peerAddr, turbineURL)
 
 	handlers := map[string]http.Handler{
 		routes.CreateBuild: http.HandlerFunc(builds.CreateBuild),

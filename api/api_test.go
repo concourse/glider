@@ -16,6 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
+	"github.com/pivotal-golang/lager/lagertest"
 
 	"github.com/concourse/glider/api"
 	"github.com/concourse/glider/api/builds"
@@ -31,7 +32,7 @@ var _ = Describe("API", func() {
 	BeforeEach(func() {
 		turbineServer = ghttp.NewServer()
 
-		handler, err := api.New("peer-addr", turbineServer.URL())
+		handler, err := api.New(lagertest.NewTestLogger("test"), "peer-addr", turbineServer.URL())
 		Ω(err).ShouldNot(HaveOccurred())
 
 		server = httptest.NewServer(handler)

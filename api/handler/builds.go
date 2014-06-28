@@ -3,13 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"sort"
 	"sync"
 	"time"
 
 	"github.com/nu7hatch/gouuid"
+	"github.com/pivotal-golang/lager"
 
 	"github.com/concourse/glider/api/builds"
 	"github.com/concourse/logbuffer"
@@ -37,7 +37,11 @@ func (handler *Handler) CreateBuild(w http.ResponseWriter, r *http.Request) {
 	build.Guid = uuid.String()
 	build.CreatedAt = time.Now()
 
-	log.Println("registering", build.Guid)
+	log := handler.logger.Session("create", lager.Data{
+		"build": build,
+	})
+
+	log.Info("register")
 
 	handler.bitsMutex.Lock()
 	handler.bits[build.Guid] = BitsSession{

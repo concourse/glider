@@ -2,7 +2,8 @@ package handler
 
 import (
 	"io"
-	"log"
+
+	"github.com/pivotal-golang/lager"
 
 	"code.google.com/p/go.net/websocket"
 )
@@ -20,9 +21,13 @@ func (handler *Handler) LogInput(conn *websocket.Conn) {
 
 	defer logBuffer.Close()
 
+	log := handler.logger.Session("log-in", lager.Data{
+		"guid": guid,
+	})
+
 	_, err := io.Copy(logBuffer, conn)
 	if err != nil {
-		log.Println("error reading message:", err)
+		log.Error("failed-to-stream", err)
 		return
 	}
 }

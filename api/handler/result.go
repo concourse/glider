@@ -2,10 +2,10 @@ package handler
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/concourse/glider/api/builds"
+	"github.com/pivotal-golang/lager"
 )
 
 func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
@@ -20,6 +20,10 @@ func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log := handler.logger.Session("set-result", lager.Data{
+		"build": build,
+	})
+
 	var result builds.BuildResult
 	err := json.NewDecoder(r.Body).Decode(&result)
 	if err != nil {
@@ -27,7 +31,9 @@ func (handler *Handler) SetResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("updating result", build.Guid, result)
+	log.Info("update", lager.Data{
+		"result": result,
+	})
 
 	handler.buildsMutex.Lock()
 	build.Status = result.Status

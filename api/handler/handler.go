@@ -6,9 +6,12 @@ import (
 
 	"github.com/concourse/glider/api/builds"
 	"github.com/concourse/logbuffer"
+	"github.com/pivotal-golang/lager"
 )
 
 type Handler struct {
+	logger lager.Logger
+
 	peerAddr   string
 	turbineURL string
 
@@ -27,8 +30,10 @@ type BitsSession struct {
 	servingBits *sync.WaitGroup
 }
 
-func NewHandler(peerAddr string, turbineURL string) *Handler {
+func NewHandler(logger lager.Logger, peerAddr string, turbineURL string) *Handler {
 	return &Handler{
+		logger: logger,
+
 		peerAddr:   peerAddr,
 		turbineURL: turbineURL,
 

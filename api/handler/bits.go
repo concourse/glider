@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/concourse/turbine/api/builds"
+	"github.com/pivotal-golang/lager"
 )
 
 func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +23,11 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("triggering", build.Guid)
+	log := handler.logger.Session("upload", lager.Data{
+		"build": build,
+	})
+
+	log.Info("triggering")
 
 	buf := new(bytes.Buffer)
 
@@ -65,9 +68,9 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 	res, err := http.Post(handler.turbineURL+"/builds", "application/json", buf)
 	if err != nil {
-		log.Println("error triggering build:", err)
-		panic(err)
+		log.Error("failed-to-trigger", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	res.Body.Close()
@@ -83,8 +86,9 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		session.bits <- r
 		session.servingBits.Wait()
 	} else {
-		log.Println("turbine failed:")
-		res.Write(os.Stderr)
+		log.Info("bad-status-code", lager.Data{
+			"status": res.Status,
+		})
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 }
@@ -101,6 +105,10 @@ func (handler *Handler) DownloadBits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log := handler.logger.Session("upload", lager.Data{
+		"guid": guid,
+	})
+
 	var bits *http.Request
 
 	select {
@@ -110,7 +118,7 @@ func (handler *Handler) DownloadBits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("serving bits for", guid)
+	log.Info("serve")
 
 	defer session.servingBits.Done()
 
@@ -120,6 +128,6 @@ func (handler *Handler) DownloadBits(w http.ResponseWriter, r *http.Request) {
 
 	_, err := io.Copy(w, bits.Body)
 	if err != nil {
-		log.Println("streaming bits failed:", err)
+		log.Error("failed-to-stream", err)
 	}
 }
