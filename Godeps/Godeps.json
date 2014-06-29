@@ -36,6 +36,14 @@
 			"Rev": "036273e6f643552b16fe7a6464afd2ae0324992e"
 		},
 		{
+			"ImportPath": "github.com/pivotal-golang/lager",
+			"Rev": "cb90f6fb0421b0c17072b72c6ec93189431a2057"
+		},
+		{
+			"ImportPath": "github.com/tedsuo/ifrit",
+			"Rev": "8f57c1dcd12fc1cf91eea3f7704e348f3023f834"
+		},
+		{
 			"ImportPath": "github.com/tedsuo/router",
 			"Rev": "e148496de27fab9f10ef07f3be00471fa59f58b9"
 		}
