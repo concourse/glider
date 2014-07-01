@@ -75,9 +75,14 @@ var _ = Describe("API", func() {
 
 		BeforeEach(func() {
 			build = &builds.Build{
-				Image:  "ubuntu",
-				Path:   "some/path",
-				Script: "ls -al /",
+				Path: "some/path",
+				Config: TurbineBuilds.Config{
+					Image: "ubuntu",
+					Run: TurbineBuilds.RunConfig{
+						Path: "ls",
+						Args: []string{"-al", "/"},
+					},
+				},
 			}
 
 			requestBody = buildPayload(build)
@@ -114,7 +119,7 @@ var _ = Describe("API", func() {
 
 		Context("when image is omitted", func() {
 			BeforeEach(func() {
-				build.Image = ""
+				build.Config.Image = ""
 				requestBody = buildPayload(build)
 			})
 
@@ -163,9 +168,9 @@ var _ = Describe("API", func() {
 
 			BeforeEach(func() {
 				expectedBuilds = []builds.Build{
-					createBuild(builds.Build{Image: "image1"}),
-					createBuild(builds.Build{Image: "image2"}),
-					createBuild(builds.Build{Image: "image3"}),
+					createBuild(builds.Build{Config: TurbineBuilds.Config{Image: "image1"}}),
+					createBuild(builds.Build{Config: TurbineBuilds.Config{Image: "image2"}}),
+					createBuild(builds.Build{Config: TurbineBuilds.Config{Image: "image3"}}),
 				}
 			})
 
@@ -210,11 +215,16 @@ var _ = Describe("API", func() {
 		Context("with a valid build guid", func() {
 			BeforeEach(func() {
 				build = createBuild(builds.Build{
-					Image:  "ubuntu",
-					Path:   "some/path",
-					Script: "ls -al /",
-					Env: []map[string]string{
-						{"FOO": "bar"},
+					Path: "some/path",
+					Config: TurbineBuilds.Config{
+						Image: "ubuntu",
+						Params: map[string]string{
+							"FOO": "bar",
+						},
+						Run: TurbineBuilds.RunConfig{
+							Path: "ls",
+							Args: []string{"-al", "/"},
+						},
 					},
 				})
 			})
@@ -230,10 +240,13 @@ var _ = Describe("API", func() {
 
 							Config: TurbineBuilds.Config{
 								Image: "ubuntu",
-								Env: []map[string]string{
-									{"FOO": "bar"},
+								Params: map[string]string{
+									"FOO": "bar",
 								},
-								Script: "ls -al /",
+								Run: TurbineBuilds.RunConfig{
+									Path: "ls",
+									Args: []string{"-al", "/"},
+								},
 							},
 
 							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
@@ -298,7 +311,7 @@ var _ = Describe("API", func() {
 
 		Context("with a valid build guid", func() {
 			BeforeEach(func() {
-				build = createBuild(builds.Build{Image: "ubuntu"})
+				build = createBuild(builds.Build{Config: TurbineBuilds.Config{Image: "ubuntu"}})
 			})
 
 			Context("with bits", func() {
@@ -391,8 +404,9 @@ var _ = Describe("API", func() {
 			BeforeEach(func() {
 				build = createBuild(
 					builds.Build{
-						Image:  "ubuntu",
-						Script: "ls -al /",
+						Config: TurbineBuilds.Config{
+							Image: "ubuntu",
+						},
 					},
 				)
 			})
@@ -444,8 +458,9 @@ var _ = Describe("API", func() {
 			BeforeEach(func() {
 				build = createBuild(
 					builds.Build{
-						Image:  "ubuntu",
-						Script: "ls -al /",
+						Config: TurbineBuilds.Config{
+							Image: "ubuntu",
+						},
 					},
 				)
 

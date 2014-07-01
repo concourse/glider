@@ -82,7 +82,7 @@ func (handler *Handler) GetBuild(w http.ResponseWriter, r *http.Request) {
 }
 
 func (handler *Handler) validateBuild(build builds.Build) error {
-	if build.Image == "" {
+	if build.Config.Image == "" {
 		return errors.New("missing build image")
 	}
 

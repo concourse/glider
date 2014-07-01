@@ -38,11 +38,7 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 		Privileged: true,
 
-		Config: builds.Config{
-			Image:  build.Image,
-			Script: build.Script,
-			Env:    build.Env,
-		},
+		Config: build.Config,
 
 		Inputs: []builds.Input{
 			{
