@@ -20,7 +20,7 @@
 		},
 		{
 			"ImportPath": "github.com/concourse/turbine/api/builds",
-			"Rev": "5cd75242b748f4b8eb24559489b083de1a504dab"
+			"Rev": "fccd405df9138cc16549a482cb88380602fceceb"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
