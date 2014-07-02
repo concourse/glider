@@ -247,14 +247,14 @@ var _ = Describe("API", func() {
 									Path: "ls",
 									Args: []string{"-al", "/"},
 								},
-								Inputs: []TurbineBuilds.Input{
-									{
-										Name: "some-name",
-										Type: "raw",
-										Source: TurbineBuilds.Source{
-											"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
-										},
-										DestinationPath: "some-name",
+							},
+
+							Inputs: []TurbineBuilds.Input{
+								{
+									Name: "some-name",
+									Type: "raw",
+									Source: TurbineBuilds.Source{
+										"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
 									},
 								},
 							},

@@ -31,19 +31,6 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 	buf := new(bytes.Buffer)
 
-	build.Config = builds.Config{
-		Inputs: []builds.Input{
-			{
-				Name: build.Name,
-				Type: "raw",
-				Source: builds.Source{
-					"uri": "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
-				},
-				DestinationPath: build.Name,
-			},
-		},
-	}.Merge(build.Config)
-
 	turbineBuild := builds.Build{
 		Guid: build.Guid,
 
@@ -52,6 +39,16 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		Privileged: true,
 
 		Config: build.Config,
+
+		Inputs: []builds.Input{
+			{
+				Name: build.Name,
+				Type: "raw",
+				Source: builds.Source{
+					"uri": "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
+				},
+			},
+		},
 
 		Callback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
 	}
