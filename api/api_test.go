@@ -75,7 +75,7 @@ var _ = Describe("API", func() {
 
 		BeforeEach(func() {
 			build = &builds.Build{
-				Path: "some/path",
+				Name: "some-name",
 				Config: TurbineBuilds.Config{
 					Image: "ubuntu",
 					Run: TurbineBuilds.RunConfig{
@@ -215,7 +215,7 @@ var _ = Describe("API", func() {
 		Context("with a valid build guid", func() {
 			BeforeEach(func() {
 				build = createBuild(builds.Build{
-					Path: "some/path",
+					Name: "some-name",
 					Config: TurbineBuilds.Config{
 						Image: "ubuntu",
 						Params: map[string]string{
@@ -247,20 +247,20 @@ var _ = Describe("API", func() {
 									Path: "ls",
 									Args: []string{"-al", "/"},
 								},
+								Inputs: []TurbineBuilds.Input{
+									{
+										Name: "some-name",
+										Type: "raw",
+										Source: TurbineBuilds.Source{
+											"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
+										},
+										DestinationPath: "some-name",
+									},
+								},
 							},
 
 							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
 							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
-
-							Inputs: []TurbineBuilds.Input{
-								{
-									Type: "raw",
-									Source: TurbineBuilds.Source{
-										"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
-									},
-									DestinationPath: "some/path",
-								},
-							},
 						}),
 						ghttp.RespondWith(201, ""),
 					),
