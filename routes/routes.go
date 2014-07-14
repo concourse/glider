@@ -4,7 +4,7 @@ import "github.com/tedsuo/rata"
 
 const (
 	CreateBuild  = "CreateBuild"
-	GetBuild     = "GetBuild"
+	GetBuilds    = "GetBuilds"
 	HijackBuild  = "HijackBuild"
 	UploadBits   = "UploadBits"
 	DownloadBits = "DownloadBits"
@@ -16,7 +16,7 @@ const (
 
 var Routes = rata.Routes{
 	{Path: "/builds", Method: "POST", Name: CreateBuild},
-	{Path: "/builds", Method: "GET", Name: GetBuild},
+	{Path: "/builds", Method: "GET", Name: GetBuilds},
 
 	{Path: "/builds/:guid/bits", Method: "POST", Name: UploadBits},
 	{Path: "/builds/:guid/bits", Method: "GET", Name: DownloadBits},

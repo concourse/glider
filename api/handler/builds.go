@@ -62,7 +62,7 @@ func (handler *Handler) CreateBuild(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(build)
 }
 
-func (handler *Handler) GetBuild(w http.ResponseWriter, r *http.Request) {
+func (handler *Handler) GetBuilds(w http.ResponseWriter, r *http.Request) {
 	handler.buildsMutex.RLock()
 
 	builds := make([]builds.Build, len(handler.builds))
