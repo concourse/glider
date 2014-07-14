@@ -7,12 +7,12 @@
 	"Deps": [
 		{
 			"ImportPath": "code.google.com/p/go.net/websocket",
-			"Comment": "null-136",
-			"Rev": "28ff664507e453c4455b8c65e701bbe2b2ac980d"
+			"Comment": "null-137",
+			"Rev": "335bcad0b70a3ba61b9951992a418c9176a73fd4"
 		},
 		{
 			"ImportPath": "github.com/bmizerany/pat",
-			"Rev": "48be7df2c27e1cec821a3284a683ce6ef90d9052"
+			"Rev": "b8a35001b773c267eb260a691f4e5499a3531600"
 		},
 		{
 			"ImportPath": "github.com/concourse/logbuffer",
@@ -20,7 +20,7 @@
 		},
 		{
 			"ImportPath": "github.com/concourse/turbine/api/builds",
-			"Rev": "151694ac31e5d10f8b1a376f79fe5d92aec1a46b"
+			"Rev": "ef7f6a164238af1e18e084988dc02c09b9409966"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",
@@ -28,24 +28,24 @@
 		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
-			"Comment": "v1.0.0-16-g12446bb",
-			"Rev": "12446bbcc74950944c897e32ea99cc8d058f9c92"
+			"Comment": "v1.0.0-18-gb8a1dc9",
+			"Rev": "b8a1dc909067ac17581903a056b5a709fc74c779"
 		},
 		{
 			"ImportPath": "github.com/onsi/gomega",
-			"Rev": "036273e6f643552b16fe7a6464afd2ae0324992e"
+			"Rev": "efd113280743f90026f1dc18b93ca5355d8df0bf"
 		},
 		{
 			"ImportPath": "github.com/pivotal-golang/lager",
-			"Rev": "cb90f6fb0421b0c17072b72c6ec93189431a2057"
+			"Rev": "e8822eb6379ecd32065776bd84139100cffa5563"
 		},
 		{
 			"ImportPath": "github.com/tedsuo/ifrit",
-			"Rev": "8f57c1dcd12fc1cf91eea3f7704e348f3023f834"
+			"Rev": "21ef26b2e0107e0ce523244608e430db73a353bd"
 		},
 		{
-			"ImportPath": "github.com/tedsuo/router",
-			"Rev": "e148496de27fab9f10ef07f3be00471fa59f58b9"
+			"ImportPath": "github.com/tedsuo/rata",
+			"Rev": "ffbc6810b2dff37aade33e5bf1ee8deadafe867d"
 		}
 	]
 }
