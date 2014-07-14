@@ -230,39 +230,41 @@ var _ = Describe("API", func() {
 			})
 
 			BeforeEach(func() {
+				turbineBuild := TurbineBuilds.Build{
+					Guid: build.Guid,
+
+					Privileged: true,
+
+					Config: TurbineBuilds.Config{
+						Image: "ubuntu",
+						Params: map[string]string{
+							"FOO": "bar",
+						},
+						Run: TurbineBuilds.RunConfig{
+							Path: "ls",
+							Args: []string{"-al", "/"},
+						},
+					},
+
+					Inputs: []TurbineBuilds.Input{
+						{
+							Name: "some-name",
+							Type: "raw",
+							Source: TurbineBuilds.Source{
+								"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
+							},
+						},
+					},
+
+					LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
+					Callback: "http://peer-addr/builds/" + build.Guid + "/result",
+				}
+
 				turbineServer.AppendHandlers(
 					ghttp.CombineHandlers(
 						ghttp.VerifyRequest("POST", "/builds"),
-						ghttp.VerifyJSONRepresenting(TurbineBuilds.Build{
-							Guid: build.Guid,
-
-							Privileged: true,
-
-							Config: TurbineBuilds.Config{
-								Image: "ubuntu",
-								Params: map[string]string{
-									"FOO": "bar",
-								},
-								Run: TurbineBuilds.RunConfig{
-									Path: "ls",
-									Args: []string{"-al", "/"},
-								},
-							},
-
-							Inputs: []TurbineBuilds.Input{
-								{
-									Name: "some-name",
-									Type: "raw",
-									Source: TurbineBuilds.Source{
-										"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
-									},
-								},
-							},
-
-							LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
-							Callback: "http://peer-addr/builds/" + build.Guid + "/result",
-						}),
-						ghttp.RespondWith(201, ""),
+						ghttp.VerifyJSONRepresenting(turbineBuild),
+						ghttp.RespondWithJSONEncoded(201, turbineBuild),
 					),
 				)
 			})
@@ -320,10 +322,12 @@ var _ = Describe("API", func() {
 					gotBits.Add(1)
 
 					turbineServer.AppendHandlers(
-						func(w http.ResponseWriter, req *http.Request) {
-							gotBits.Done()
-							w.WriteHeader(201)
-						},
+						ghttp.CombineHandlers(
+							func(w http.ResponseWriter, req *http.Request) {
+								gotBits.Done()
+							},
+							ghttp.RespondWithJSONEncoded(201, TurbineBuilds.Build{}),
+						),
 					)
 
 					go func() {

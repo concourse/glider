@@ -17,6 +17,7 @@ func New(logger lager.Logger, peerAddr, turbineURL string) (http.Handler, error)
 	handlers := map[string]http.Handler{
 		routes.CreateBuild: http.HandlerFunc(builds.CreateBuild),
 		routes.GetBuild:    http.HandlerFunc(builds.GetBuild),
+		routes.HijackBuild: http.HandlerFunc(builds.HijackBuild),
 
 		routes.UploadBits:   http.HandlerFunc(builds.UploadBits),
 		routes.DownloadBits: http.HandlerFunc(builds.DownloadBits),

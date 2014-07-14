@@ -67,10 +67,22 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res.Body.Close()
+	defer res.Body.Close()
 
 	if res.StatusCode == http.StatusCreated {
+		var tbuild builds.Build
+		err := json.NewDecoder(res.Body).Decode(&tbuild)
+		if err != nil {
+			log.Error("failed-to-parse-build", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		w.WriteHeader(http.StatusCreated)
+
+		handler.buildsMutex.Lock()
+		build.HijackURL = tbuild.HijackURL
+		handler.buildsMutex.Unlock()
 
 		handler.bitsMutex.RLock()
 		session := handler.bits[guid]
