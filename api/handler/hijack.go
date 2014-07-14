@@ -43,14 +43,14 @@ func (handler *Handler) HijackBuild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := httputil.NewClientConn(conn, nil)
-
 	req, err := http.NewRequest(r.Method, build.HijackURL, r.Body)
 	if err != nil {
 		log.Error("failed-to-create-request", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	client := httputil.NewClientConn(conn, nil)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -59,7 +59,12 @@ func (handler *Handler) HijackBuild(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(resp.StatusCode)
+	if resp.StatusCode != http.StatusOK {
+		resp.Write(w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 
 	sconn, sbr, err := w.(http.Hijacker).Hijack()
 	if err != nil {
@@ -68,6 +73,9 @@ func (handler *Handler) HijackBuild(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cconn, cbr := client.Hijack()
+
+	defer cconn.Close()
+	defer sconn.Close()
 
 	go io.Copy(cconn, sbr)
 
