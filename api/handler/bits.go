@@ -82,6 +82,7 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 
 		handler.buildsMutex.Lock()
 		build.HijackURL = tbuild.HijackURL
+		build.AbortURL = tbuild.AbortURL
 		handler.buildsMutex.Unlock()
 
 		handler.bitsMutex.RLock()

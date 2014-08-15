@@ -18,6 +18,7 @@ func New(logger lager.Logger, peerAddr, turbineURL string) (http.Handler, error)
 		routes.CreateBuild: http.HandlerFunc(builds.CreateBuild),
 		routes.GetBuilds:   http.HandlerFunc(builds.GetBuilds),
 		routes.HijackBuild: http.HandlerFunc(builds.HijackBuild),
+		routes.AbortBuild:  http.HandlerFunc(builds.AbortBuild),
 
 		routes.UploadBits:   http.HandlerFunc(builds.UploadBits),
 		routes.DownloadBits: http.HandlerFunc(builds.DownloadBits),
