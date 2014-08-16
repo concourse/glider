@@ -9,20 +9,23 @@ import (
 func (handler *Handler) AbortBuild(w http.ResponseWriter, r *http.Request) {
 	guid := r.FormValue(":guid")
 
+	log := handler.logger.Session("abort", lager.Data{
+		"guid": guid,
+	})
+
 	handler.buildsMutex.RLock()
 	build, found := handler.builds[guid]
 	handler.buildsMutex.RUnlock()
 
 	if !found {
+		log.Info("build-not-found")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	log := handler.logger.Session("abort", lager.Data{
+	log.Info("aborting", lager.Data{
 		"build": build,
 	})
-
-	log.Info("aborting")
 
 	req, err := http.NewRequest(r.Method, build.AbortURL, r.Body)
 	if err != nil {
