@@ -249,7 +249,7 @@ var _ = Describe("API", func() {
 					Inputs: []TurbineBuilds.Input{
 						{
 							Name: "some-name",
-							Type: "raw",
+							Type: "archive",
 							Source: TurbineBuilds.Source{
 								"uri": "http://peer-addr/builds/" + build.Guid + "/bits",
 							},

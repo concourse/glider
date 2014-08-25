@@ -43,7 +43,7 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 		Inputs: []builds.Input{
 			{
 				Name: build.Name,
-				Type: "raw",
+				Type: "archive",
 				Source: builds.Source{
 					"uri": "http://" + handler.peerAddr + "/builds/" + build.Guid + "/bits",
 				},
