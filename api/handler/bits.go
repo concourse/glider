@@ -34,8 +34,6 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 	turbineBuild := builds.Build{
 		Guid: build.Guid,
 
-		LogsURL: "ws://" + handler.peerAddr + "/builds/" + build.Guid + "/log/input",
-
 		Privileged: true,
 
 		Config: build.Config,
@@ -50,7 +48,8 @@ func (handler *Handler) UploadBits(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 
-		Callback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
+		StatusCallback: "http://" + handler.peerAddr + "/builds/" + build.Guid + "/result",
+		EventsCallback: "ws://" + handler.peerAddr + "/builds/" + build.Guid + "/log/input",
 	}
 
 	err := json.NewEncoder(buf).Encode(turbineBuild)

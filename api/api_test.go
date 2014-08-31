@@ -256,8 +256,8 @@ var _ = Describe("API", func() {
 						},
 					},
 
-					LogsURL:  "ws://peer-addr/builds/" + build.Guid + "/log/input",
-					Callback: "http://peer-addr/builds/" + build.Guid + "/result",
+					StatusCallback: "http://peer-addr/builds/" + build.Guid + "/result",
+					EventsCallback: "ws://peer-addr/builds/" + build.Guid + "/log/input",
 				}
 
 				turbineServer.AppendHandlers(

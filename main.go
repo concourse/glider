@@ -40,7 +40,7 @@ func main() {
 		logger.Fatal("failed-to-initialize-handler", err)
 	}
 
-	server := ifrit.Envoke(http_server.New(*listenAddr, handler))
+	server := http_server.New(*listenAddr, handler)
 	running := ifrit.Envoke(sigmon.New(server))
 
 	logger.Info("listening", lager.Data{
