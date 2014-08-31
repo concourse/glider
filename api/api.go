@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 
-	"code.google.com/p/go.net/websocket"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/rata"
 
@@ -26,8 +25,8 @@ func New(logger lager.Logger, peerAddr, turbineURL string) (http.Handler, error)
 		routes.SetResult: http.HandlerFunc(builds.SetResult),
 		routes.GetResult: http.HandlerFunc(builds.GetResult),
 
-		routes.LogInput:  websocket.Server{Handler: builds.LogInput},
-		routes.LogOutput: websocket.Server{Handler: builds.LogOutput},
+		routes.LogInput:  http.HandlerFunc(builds.LogInput),
+		routes.LogOutput: http.HandlerFunc(builds.LogOutput),
 	}
 
 	return rata.NewRouter(routes.Routes, handlers)

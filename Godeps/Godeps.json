@@ -6,21 +6,20 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "code.google.com/p/go.net/websocket",
-			"Comment": "null-137",
-			"Rev": "335bcad0b70a3ba61b9951992a418c9176a73fd4"
-		},
-		{
 			"ImportPath": "github.com/bmizerany/pat",
 			"Rev": "b8a35001b773c267eb260a691f4e5499a3531600"
 		},
 		{
 			"ImportPath": "github.com/concourse/logbuffer",
-			"Rev": "d759e3301e0607785108933dca75c8008ccf5d93"
+			"Rev": "33637b8d452fadfa851fc427e267183fe50a68e5"
 		},
 		{
 			"ImportPath": "github.com/concourse/turbine/api/builds",
-			"Rev": "43d63dff088431abdae508e93dd652c186c8e9c9"
+			"Rev": "cd52faabb4ad47ebb4ac489c36a43d5839e022cd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "4292df70df546334d4174bcd77271253c9b7835c"
 		},
 		{
 			"ImportPath": "github.com/nu7hatch/gouuid",

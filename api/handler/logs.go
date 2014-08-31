@@ -1,15 +1,31 @@
 package handler
 
 import (
-	"io"
+	"encoding/json"
+	"net/http"
 
+	"github.com/gorilla/websocket"
 	"github.com/pivotal-golang/lager"
-
-	"code.google.com/p/go.net/websocket"
 )
 
-func (handler *Handler) LogInput(conn *websocket.Conn) {
-	guid := conn.Request().FormValue(":guid")
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(*http.Request) bool {
+		return true
+	},
+}
+
+func (handler *Handler) LogInput(w http.ResponseWriter, r *http.Request) {
+	guid := r.FormValue(":guid")
+
+	log := handler.logger.Session("log-in", lager.Data{
+		"guid": guid,
+	})
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Error("failed-to-upgrade", err)
+		return
+	}
 
 	handler.logsMutex.RLock()
 	logBuffer, found := handler.logs[guid]
@@ -21,19 +37,29 @@ func (handler *Handler) LogInput(conn *websocket.Conn) {
 
 	defer logBuffer.Close()
 
-	log := handler.logger.Session("log-in", lager.Data{
-		"guid": guid,
-	})
+	for {
+		var msg *json.RawMessage
+		err := conn.ReadJSON(&msg)
+		if err != nil {
+			break
+		}
 
-	_, err := io.Copy(logBuffer, conn)
-	if err != nil {
-		log.Error("failed-to-stream", err)
-		return
+		logBuffer.WriteMessage(msg)
 	}
 }
 
-func (handler *Handler) LogOutput(conn *websocket.Conn) {
-	guid := conn.Request().FormValue(":guid")
+func (handler *Handler) LogOutput(w http.ResponseWriter, r *http.Request) {
+	guid := r.FormValue(":guid")
+
+	log := handler.logger.Session("log-out", lager.Data{
+		"guid": guid,
+	})
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Error("failed-to-upgrade", err)
+		return
+	}
 
 	handler.logsMutex.RLock()
 	logBuffer, found := handler.logs[guid]

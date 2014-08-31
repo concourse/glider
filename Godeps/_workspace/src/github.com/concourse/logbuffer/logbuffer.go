@@ -1,16 +1,18 @@
 package logbuffer
 
 import (
+	"encoding/json"
 	"errors"
-	"io"
 	"sync"
+
+	"github.com/gorilla/websocket"
 )
 
 type LogBuffer struct {
-	content      []byte
+	content      []*json.RawMessage
 	contentMutex *sync.RWMutex
 
-	sinks []io.WriteCloser
+	sinks []*websocket.Conn
 
 	closed        bool
 	waitForClosed chan struct{}
@@ -23,14 +25,14 @@ func NewLogBuffer() *LogBuffer {
 	}
 }
 
-func (buffer *LogBuffer) Write(data []byte) (int, error) {
+func (buffer *LogBuffer) WriteMessage(msg *json.RawMessage) error {
 	buffer.contentMutex.Lock()
 
-	buffer.content = append(buffer.content, data...)
+	buffer.content = append(buffer.content, msg)
 
-	newSinks := []io.WriteCloser{}
+	newSinks := []*websocket.Conn{}
 	for _, sink := range buffer.sinks {
-		_, err := sink.Write(data)
+		err := sink.WriteJSON(msg)
 		if err != nil {
 			continue
 		}
@@ -42,13 +44,18 @@ func (buffer *LogBuffer) Write(data []byte) (int, error) {
 
 	buffer.contentMutex.Unlock()
 
-	return len(data), nil
+	return nil
 }
 
-func (buffer *LogBuffer) Attach(sink io.WriteCloser) {
+func (buffer *LogBuffer) Attach(sink *websocket.Conn) {
 	buffer.contentMutex.Lock()
 
-	sink.Write(buffer.content)
+	for _, msg := range buffer.content {
+		err := sink.WriteJSON(msg)
+		if err != nil {
+			return
+		}
+	}
 
 	if buffer.closed {
 		sink.Close()
@@ -79,13 +86,4 @@ func (buffer *LogBuffer) Close() error {
 	close(buffer.waitForClosed)
 
 	return nil
-}
-
-func (buffer *LogBuffer) Content() []byte {
-	buffer.contentMutex.Lock()
-	content := make([]byte, len(buffer.content))
-	copy(content, buffer.content)
-	buffer.contentMutex.Unlock()
-
-	return content
 }

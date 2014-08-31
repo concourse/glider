@@ -4,17 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sync"
 	"time"
 
-	"code.google.com/p/go.net/websocket"
+	"github.com/gorilla/websocket"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/onsi/gomega/gbytes"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/pivotal-golang/lager/lagertest"
 
@@ -444,7 +442,7 @@ var _ = Describe("API", func() {
 		var build builds.Build
 		var endpoint string
 
-		var conn io.ReadWriteCloser
+		var conn *websocket.Conn
 
 		BeforeEach(func() {
 			build = builds.Build{
@@ -479,16 +477,16 @@ var _ = Describe("API", func() {
 				BeforeEach(func() {
 					var err error
 
-					conn, err = websocket.Dial(endpoint, "", "http://0.0.0.0")
+					conn, _, err = websocket.DefaultDialer.Dial(endpoint, nil)
 					Ω(err).ShouldNot(HaveOccurred())
 
-					_, err = conn.Write([]byte("hello1"))
+					err = conn.WriteJSON("hello1")
 					Ω(err).ShouldNot(HaveOccurred())
 
-					_, err = conn.Write([]byte("hello2\n"))
+					err = conn.WriteJSON("hello2")
 					Ω(err).ShouldNot(HaveOccurred())
 
-					_, err = conn.Write([]byte("hello3"))
+					err = conn.WriteJSON("hello3")
 					Ω(err).ShouldNot(HaveOccurred())
 				})
 
@@ -496,36 +494,51 @@ var _ = Describe("API", func() {
 					conn.Close()
 				})
 
-				outputSink := func() *gbytes.Buffer {
+				outputSink := func() <-chan interface{} {
 					outEndpoint := fmt.Sprintf(
 						"ws://%s/builds/%s/log/output",
 						server.Listener.Addr().String(),
 						build.Guid,
 					)
 
-					outConn, err := websocket.Dial(outEndpoint, "", "http://0.0.0.0")
+					outConn, _, err := websocket.DefaultDialer.Dial(outEndpoint, nil)
 					Ω(err).ShouldNot(HaveOccurred())
 
-					buf := gbytes.NewBuffer()
+					messages := make(chan interface{})
 
-					go io.Copy(buf, outConn)
+					go func() {
+						for {
+							var msg interface{}
+							err := outConn.ReadJSON(&msg)
+							if err != nil {
+								break
+							}
 
-					return buf
+							messages <- msg
+						}
+					}()
+
+					return messages
 				}
 
 				It("presents them to /builds/{guid}/logs/output", func() {
-					Eventually(outputSink()).Should(gbytes.Say("hello1hello2\nhello3"))
+					sink := outputSink()
+					Eventually(sink).Should(Receive(Equal("hello1")))
+					Eventually(sink).Should(Receive(Equal("hello2")))
+					Eventually(sink).Should(Receive(Equal("hello3")))
 				})
 
 				It("streams them to all open connections to /build/{guid}/logs/output", func() {
 					sink1 := outputSink()
 					sink2 := outputSink()
 
-					_, err := conn.Write([]byte("some message"))
+					msg := "hello4"
+
+					err := conn.WriteJSON(msg)
 					Ω(err).ShouldNot(HaveOccurred())
 
-					Eventually(sink1).Should(gbytes.Say("some message"))
-					Eventually(sink2).Should(gbytes.Say("some message"))
+					Eventually(sink1).Should(Receive(Equal(msg)))
+					Eventually(sink2).Should(Receive(Equal(msg)))
 				})
 			})
 		})
